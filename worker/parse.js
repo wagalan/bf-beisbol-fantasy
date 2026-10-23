@@ -111,7 +111,7 @@ export function parseNewsFeed(xml, feed, { now = Date.now(), maxAgeDays = 10 } =
 
   const out = [];
   for (const r of raw) {
-    const title = cleanText(r.title, 200);
+    const title = normalizeTitle(stripEmoji(cleanText(r.title, 200)));
     const url = safeUrl(r.link);
     if (!title || !url) continue;
     const time = Date.parse(r.date);
@@ -127,10 +127,58 @@ export function parseNewsFeed(xml, feed, { now = Date.now(), maxAgeDays = 10 } =
       feed: feed.id,
       lang: feed.lang,
       teams: [feed.team],
+      video: isVideoUrl(url),
     });
   }
   return out;
 }
+
+/** Headlines read like a newspaper: no emoji (⚾️ 📺), spacing tidied up. */
+export const stripEmoji = (s) =>
+  s.replace(/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}\u{FE0F}\u{200D}\u{20E3}]/gu, '').replace(/\s{2,}/g, ' ').replace(/\s+([!?.,:;])/g, '$1').trim();
+
+// Words that keep a capital (or all caps) when an ALL-CAPS headline is
+// converted to sentence case. Keys are accent-free and lowercase; values are
+// the proper spelling, so "AGUILAS" comes out as "Águilas".
+const KEEP = Object.fromEntries(
+  [
+    'LIDOM', 'MLB', 'MiLB', 'LMB', 'LVBP', 'MVP', 'HR', 'RBI', 'ERA', 'WBC', 'RD', 'USA', 'EE.UU.', 'TV',
+    'Tigres', 'Licey', 'Leones', 'Escogido', 'Águilas', 'Cibaeñas', 'Estrellas', 'Orientales', 'Gigantes', 'Cibao', 'Toros',
+    // Not here on purpose: AL/NL (Spanish "al"), Este, Serie, Mundial (common Spanish words).
+    'Caribe', 'Dominicana', 'Dominicano', 'República', 'Santo', 'Domingo', 'Santiago', 'Quisqueya', 'Cibao',
+    'Yankees', 'Dodgers', 'Mets', 'Red', 'Sox', 'Rays', 'Brewers', 'Cerveceros', 'Cubs', 'Astros', 'Braves', 'Bravos', 'Padres',
+    'Phillies', 'Filis', 'Marlins', 'Marlins', 'Guardians', 'Guardianes', 'Mariners', 'Marineros', 'Rangers', 'Angels', 'Angelinos',
+    'Giants', 'Gigantes', 'Orioles', 'Orioles', 'Blue', 'Jays', 'Azulejos', 'Tigers', 'Royals', 'Reales', 'Twins', 'Mellizos',
+    'White', 'Cardinals', 'Cardenales', 'Pirates', 'Piratas', 'Reds', 'Rojos', 'Nationals', 'Nacionales', 'Rockies', 'Diamondbacks',
+    'Athletics', 'Atléticos', 'Ohtani', 'Soto', 'Caminero', 'Guerrero',
+  ].map((w) => [fold(w), w]),
+);
+function fold(w) {
+  return w.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+/**
+ * Sources like LIDOM's video show write headlines in ALL CAPS. Convert those
+ * to sentence case so the list reads evenly. Only all-caps words change;
+ * mixed-case words (names, "Ep.2") are left exactly as the source wrote them.
+ */
+export function normalizeTitle(title) {
+  const letters = title.replace(/[^\p{L}]/gu, '');
+  const upper = letters.replace(/[^\p{Lu}]/gu, '').length;
+  if (letters.length < 12 || upper / letters.length < 0.6) return title;
+  let out = title.replace(/[\p{L}][\p{L}.'’-]*/gu, (w) => {
+    if (w !== w.toUpperCase()) return w; // mixed case: keep
+    const keep = KEEP[fold(w)];
+    if (keep) return keep;
+    return w.toLowerCase();
+  });
+  // Capital at the start and after . ! ? (also past ¡ ¿ and quotes).
+  out = out.replace(/(^|[.!?]\s+)([¡¿"“'‘(]*)(\p{Ll})/gu, (m, a, b, c) => a + b + c.toUpperCase());
+  return out;
+}
+
+/** Links to video pages (lidom.com/videos/…, mlb.com/video/…) get a VIDEO tag. */
+export const isVideoUrl = (url) => /\/videos?\//.test(new URL(url).pathname);
 
 /**
  * Merge fresh items for the feeds refreshed in this run into the stored list.

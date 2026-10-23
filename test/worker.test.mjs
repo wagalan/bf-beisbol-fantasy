@@ -216,3 +216,34 @@ test('LIDOM: sitemap items accumulate across refreshes; updated titles win', asy
   assert.ok(items.some((i) => i.title.startsWith('Alfredo Sena celebra')));
   assert.ok(!items.some((i) => i.title.startsWith('Alfredo Sena destaca')));
 });
+
+test('headlines: emoji stripped, video links tagged', async () => {
+  const { stripEmoji, isVideoUrl } = await import('../worker/parse.js');
+  assert.equal(stripEmoji('Palco LIDOM ⚾️ Ep.2 📺 TIGRES LANZAN NO HITTER! LEONES Y AGUILAS CON MAL INICIO ⚾️'), 'Palco LIDOM Ep.2 TIGRES LANZAN NO HITTER! LEONES Y AGUILAS CON MAL INICIO');
+  assert.equal(stripEmoji('¡Regresa Woodruff! 🇺🇸 Listo'), '¡Regresa Woodruff! Listo');
+  assert.equal(stripEmoji('Sin emojis, 100% texto'), 'Sin emojis, 100% texto');
+  assert.ok(isVideoUrl('https://lidom.com/videos/palco-lidom-ep-2-97673.html'));
+  assert.ok(!isVideoUrl('https://lidom.com/tigres-del-licey/gilbert-gomez-97663.html'));
+  const xml = fx('lidom-news.xml').replace(
+    '<url><loc>https://lidom.com/nuestro-beisbol/',
+    '<url><loc>https://lidom.com/videos/palco-lidom-ep-2-97673.html</loc><news:news><news:publication_date>2026-10-23T09:00:00-03:00</news:publication_date><news:title>Palco LIDOM ⚾️ Ep.2 📺 TIGRES</news:title></news:news></url>\n<url><loc>https://lidom.com/nuestro-beisbol/',
+  );
+  const items = parseNewsFeed(xml, LIDOM, { now: NOW });
+  const v = items.find((i) => i.url.includes('/videos/'));
+  assert.equal(v.title, 'Palco LIDOM Ep.2 Tigres'); // emoji gone, caps normalized
+  assert.equal(v.video, true);
+  assert.equal(items.filter((i) => i.video).length, 1);
+});
+
+test('ALL-CAPS headlines become sentence case; normal ones untouched', async () => {
+  const { normalizeTitle } = await import('../worker/parse.js');
+  assert.equal(
+    normalizeTitle('Palco LIDOM Ep.2 TIGRES LANZAN NO HITTER! LEONES Y AGUILAS CON MAL INICIO'),
+    'Palco LIDOM Ep.2 Tigres lanzan no hitter! Leones y Águilas con mal inicio',
+  );
+  assert.equal(normalizeTitle('¡ESCOGIDO GANA EN SANTO DOMINGO! ¿QUIÉN PARA AL LICEY?'), '¡Escogido gana en Santo Domingo! ¿Quién para al Licey?');
+  assert.equal(normalizeTitle('TOROS DEL ESTE BLANQUEAN AL LICEY EN LA SERIE'), 'Toros del este blanquean al Licey en la serie');
+  for (const t of ['Gigantes ganan su segundo en línea al dejar en el terreno a los Toros', 'Rays-Brewers World Series Game 1 FAQ (Fri., 8 ET on FOX)', 'MLB']) {
+    assert.equal(normalizeTitle(t), t);
+  }
+});

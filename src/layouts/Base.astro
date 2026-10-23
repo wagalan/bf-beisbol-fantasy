@@ -48,12 +48,19 @@ const navItems = ['episodios', 'noticias', 'fantasy', 'lidom', 'nosotros'];
       <a href={href(lang, '/')} aria-label={`${site.name}, ${lang === 'en' ? 'home' : 'inicio'}`}>
         <img src="/img/logo-blue.png" alt={site.name} width="820" height="279" />
       </a>
-      <nav class="nav" aria-label={lang === 'en' ? 'Main' : 'Principal'}>
+    </header>
+    <!-- Sentinel: when it scrolls out of view the menu below is pinned, and gets the small logo. -->
+    <div data-nav-sentinel aria-hidden="true"></div>
+    <nav class="navbar" data-navbar aria-label={lang === 'en' ? 'Main' : 'Principal'}>
+      <a class="nav-mark" href={href(lang, '/')} tabindex="-1" aria-hidden="true">
+        <img src="/img/icon-256.png" alt="" width="34" height="34" />
+      </a>
+      <div class="nav">
         {navItems.map((k) => (
           <a href={href(lang, `/${k}/`)} aria-current={path === `/${k}/` ? 'page' : undefined}>{s.nav[k]}</a>
         ))}
-      </nav>
-    </header>
+      </div>
+    </nav>
     <main id="main">
       <slot />
     </main>

@@ -78,6 +78,7 @@ function initNews(root) {
         i.source.toUpperCase() === tag ? ' · ' : ` · ${i.source} · `,
         el('time', { datetime: i.published, title: new Date(i.published).toLocaleString(locale(lang)), text: relTime(i.published, lang) }),
         el('span', { class: 'lang', text: i.lang.toUpperCase(), title: i.lang === 'es' ? 'Español' : 'English' }),
+        i.video ? el('span', { class: 'vid', text: 'VIDEO' }) : null,
       );
       const a = el('a', { href: i.url, rel: 'noopener', target: '_blank' }, meta, el('span', { class: 'n-title', text: i.title }));
       if (wide && i.summary) a.append(el('span', { class: 'n-sum', text: i.summary }));
@@ -239,7 +240,21 @@ function initClips(root) {
     });
 }
 
+/** Adds .stuck to the menu once it is pinned to the top, to show the small logo. */
+function initStickyNav() {
+  const bar = document.querySelector('[data-navbar]');
+  const sentinel = document.querySelector('[data-nav-sentinel]');
+  if (!bar) return;
+  // Phones: the menu scrolls sideways; bring the current page's link into view.
+  const nav = bar.querySelector('.nav');
+  const cur = nav?.querySelector('[aria-current="page"]');
+  if (cur && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = cur.offsetLeft - nav.offsetLeft - (nav.clientWidth - cur.offsetWidth) / 2;
+  if (!sentinel || !('IntersectionObserver' in window)) return;
+  new IntersectionObserver(([e]) => bar.classList.toggle('stuck', !e.isIntersecting)).observe(sentinel);
+}
+
 export function init() {
+  initStickyNav();
   document.querySelectorAll('[data-clips]').forEach(initClips);
   document.querySelectorAll('[data-news]').forEach(initNews);
   document.querySelectorAll('[data-videos]').forEach(initVideos);

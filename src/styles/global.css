@@ -33,11 +33,33 @@ a:hover { color: var(--blue-dark); }
 .strip .langs a { color: var(--muted); text-decoration: none; padding: 4px 2px; }
 .strip .langs a[aria-current='true'] { color: var(--ink); font-weight: 700; text-decoration: underline; }
 .beta { background: var(--orange); color: var(--ink); padding: 1px 8px; font-weight: 700; }
-.masthead { padding: 28px 0 16px; display: flex; flex-direction: column; align-items: center; gap: 16px; border-bottom: 4px double var(--ink); }
+.masthead { padding: 28px 0 8px; display: flex; flex-direction: column; align-items: center; }
 .masthead img { height: 84px; width: auto; }
-.nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 28px; font: 700 15px var(--display); text-transform: uppercase; letter-spacing: 0.12em; }
-.nav a { color: var(--ink); text-decoration: none; padding: 10px 0; border-bottom: 3px solid transparent; }
-.nav a:hover, .nav a[aria-current='page'] { border-bottom-color: var(--blue); }
+/* The menu pins to the top while scrolling (inside .wrap, so it stops before the footer). */
+.navbar { position: sticky; top: 0; z-index: 5; background: var(--paper); border-bottom: 4px double var(--ink); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+.nav-mark { grid-column: 1; justify-self: start; opacity: 0; visibility: hidden; transform: translateX(-6px); transition: opacity .2s, transform .2s, visibility .2s; }
+.nav-mark img { width: 34px; height: 34px; }
+.navbar.stuck .nav-mark { opacity: 1; visibility: visible; transform: none; }
+.navbar.stuck { box-shadow: 0 6px 12px -10px rgba(0, 0, 0, .35); }
+.nav { grid-column: 2; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 28px; font: 700 15px var(--display); text-transform: uppercase; letter-spacing: 0.12em; }
+.nav a { color: var(--ink); text-decoration: none; padding: 12px 0 9px; border-bottom: 3px solid transparent; }
+.nav a:hover { border-bottom-color: var(--rule); }
+.nav a[aria-current='page'] { border-bottom-color: var(--blue); }
+html { scroll-padding-top: 64px; } /* anchors land below the pinned menu */
+@media (max-width: 640px) {
+  /* Phones: one line that scrolls sideways, so the pinned bar stays short. */
+  .navbar { grid-template-columns: auto 1fr; gap: 12px; }
+  .nav-mark { grid-column: 1; }
+  .navbar:not(.stuck) .nav-mark { display: none; }
+  .navbar:not(.stuck) .nav { grid-column: 1 / -1; }
+  .nav { grid-column: 2; flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; gap: 22px; font-size: 14px; scrollbar-width: none; }
+  /* Centered when it fits, scrollable from the first item when it doesn't. */
+  .nav a:first-child { margin-left: auto; }
+  .nav a:last-child { margin-right: auto; }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav a { white-space: nowrap; }
+}
+@media (prefers-reduced-motion: reduce) { .nav-mark { transition: none; } }
 
 /* Sections */
 .kicker { font: 800 13px var(--display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); }
@@ -76,6 +98,7 @@ a:hover { color: var(--blue-dark); }
 .n-meta { font: 500 12px var(--mono); color: var(--muted); }
 .n-meta b { color: var(--blue); }
 .n-meta .lang { border: 1px solid var(--muted); padding: 0 4px; margin-left: 4px; }
+.n-meta .vid { background: var(--ink); color: var(--paper); padding: 0 5px; margin-left: 4px; font-weight: 700; }
 .n-title { font: 700 18px/1.25 var(--display); }
 .n-sum { font-size: 16px; color: var(--ink-2); }
 .news.wide .n-title { font-size: 21px; }
