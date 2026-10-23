@@ -282,8 +282,33 @@ function initScoreboard(root) {
   const lang = root.dataset.lang;
   const s = JSON.parse(root.dataset.i18n);
   const row = root.querySelector('.sb-row');
+  const arrows = [...root.querySelectorAll('.sb-arrow')];
   let timer = null;
   let first = true;
+
+  // Fades and arrow states follow the scroll position.
+  const edges = () => {
+    const max = row.scrollWidth - row.clientWidth - 2;
+    const left = row.scrollLeft > 2;
+    const right = row.scrollLeft < max;
+    row.classList.toggle('more-left', left);
+    row.classList.toggle('more-right', right);
+    arrows.forEach((b) => (b.disabled = b.dataset.dir === '-1' ? !left : !right));
+  };
+  row.addEventListener('scroll', edges, { passive: true });
+  window.addEventListener('resize', edges);
+  // Arrows jump to the previous/next day; within a long day, by most of a screen.
+  arrows.forEach((b) =>
+    b.addEventListener('click', () => {
+      const dir = Number(b.dataset.dir);
+      const x = row.scrollLeft;
+      const days = [...row.querySelectorAll('.sb-day')].map((d) => d.offsetLeft - row.offsetLeft - 8);
+      const target = dir > 0 ? days.find((d) => d > x + 8) : [...days].reverse().find((d) => d < x - 8);
+      const page = row.clientWidth * 0.8;
+      const to = target != null && Math.abs(target - x) <= row.clientWidth ? target : x + dir * page;
+      row.scrollTo({ left: Math.max(0, to) });
+    }),
+  );
 
   const render = (games) => {
     row.replaceChildren();
@@ -315,8 +340,13 @@ function initScoreboard(root) {
     }
     root.hidden = games.length === 0;
     // First paint: start the strip at today's games.
-    if (first && todayNode) row.scrollLeft = todayNode.offsetLeft - row.offsetLeft - 8;
+    if (first && todayNode) {
+      row.style.scrollBehavior = 'auto'; // jump, don't animate, on first paint
+      row.scrollLeft = todayNode.offsetLeft - row.offsetLeft - 8;
+      row.style.scrollBehavior = '';
+    }
     first = false;
+    edges();
   };
 
   const load = () =>

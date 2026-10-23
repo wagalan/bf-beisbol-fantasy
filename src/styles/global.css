@@ -31,7 +31,16 @@ a:hover { color: var(--blue-dark); }
 .scoreboard { background: var(--ink); color: var(--paper); font: 500 12px/1.35 var(--mono); }
 .sb-wrap { max-width: var(--max); margin: 0 auto; padding: 0 24px; display: flex; align-items: stretch; gap: 12px; }
 .sb-tag { align-self: center; font-weight: 700; letter-spacing: .08em; background: var(--blue); color: #fff; padding: 3px 7px; flex: none; }
-.sb-row { list-style: none; margin: 0; padding: 0; display: flex; align-items: stretch; overflow-x: auto; scrollbar-width: thin; flex: 1; min-width: 0; }
+.sb-row { list-style: none; margin: 0; padding: 0; display: flex; align-items: stretch; overflow-x: auto; flex: 1; min-width: 0; scrollbar-width: none; scroll-behavior: smooth; }
+.sb-row::-webkit-scrollbar { display: none; }
+/* Soft fade on whichever edge has more games beyond it. */
+.sb-row.more-right { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent); }
+.sb-row.more-left { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 48px), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 48px), transparent); }
+.sb-row.more-left.more-right { -webkit-mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent); mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent); }
+.sb-arrow { flex: none; align-self: center; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: 1px solid #3a3a3a; border-radius: 50%; background: transparent; color: var(--paper); cursor: pointer; padding: 0; transition: opacity .15s, background .15s; }
+.sb-arrow:hover:not(:disabled) { background: #2a2a2a; }
+.sb-arrow:disabled { opacity: .25; cursor: default; }
+@media (prefers-reduced-motion: reduce) { .sb-row { scroll-behavior: auto; } }
 .sb-day { flex: none; display: flex; align-items: center; padding: 0 10px; font-weight: 700; color: var(--orange); letter-spacing: .06em; border-left: 1px solid #3a3a3a; }
 .sb-game { flex: none; border-left: 1px solid #3a3a3a; }
 .sb-game a { display: flex; flex-direction: column; gap: 1px; padding: 7px 12px; min-width: 128px; color: var(--paper); text-decoration: none; }
@@ -46,7 +55,7 @@ a:hover { color: var(--blue-dark); }
 .sb-lost .sb-abbr, .sb-lost .sb-r { font-weight: 500; }
 .sb-credit { align-self: center; flex: none; color: #9a958b; font-size: 11px; text-decoration: none; }
 .sb-credit:hover { color: var(--paper); }
-@media (max-width: 640px) { .sb-wrap { padding: 0 0 0 12px; gap: 8px; } .sb-credit { display: none; } }
+@media (max-width: 640px) { .sb-wrap { padding: 0 0 0 12px; gap: 8px; } .sb-credit, .sb-arrow { display: none; } } /* phones: swipe */
 
 /* Top strip + masthead */
 .strip { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--ink); font: 500 13px var(--mono); }

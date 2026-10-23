@@ -10,7 +10,13 @@ const s = t(lang);
 <section class="scoreboard" data-scoreboard data-lang={lang} data-i18n={JSON.stringify(s.sb)} aria-label={s.sb.label} hidden>
   <div class="sb-wrap">
     <span class="sb-tag">LIDOM</span>
+    <button type="button" class="sb-arrow" data-dir="-1" aria-label={s.sb.prev}>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+    </button>
     <ol class="sb-row"></ol>
+    <button type="button" class="sb-arrow" data-dir="1" aria-label={s.sb.next}>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+    </button>
     <a class="sb-credit" href="https://www.mlb.com/" rel="noopener">{s.sb.credit}</a>
   </div>
 </section>
