@@ -22,7 +22,7 @@
 	"kv_namespaces": [
 		// Replace with the id printed by: npx wrangler kv namespace create 7b017f306b7043c4873ddd843839fde6
 		{
-			"binding": "7b017f306b7043c4873ddd843839fde6",
+			"binding": "BF_KV",
 			"id": "7b017f306b7043c4873ddd843839fde6",
 			"remote": true
 		}
