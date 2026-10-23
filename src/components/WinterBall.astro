@@ -1,0 +1,16 @@
+---
+// "Pelota invernal" box on the home page: latest LIDOM headlines + newest LIDOM article.
+import NewsList from './NewsList.astro';
+import { t, href } from '../i18n/ui.js';
+import { articles } from '../lib/articles.js';
+interface Props { lang: 'es' | 'en'; limit?: number; }
+const { lang, limit = 4 } = Astro.props;
+const s = t(lang);
+const lidom = (await articles(lang, 'lidom'))[0];
+---
+<h2 class="h-sec">{s.winterBall}</h2>
+<NewsList lang={lang} team="lidom" limit={limit} />
+{lidom && (
+  <p style="margin:0"><span class="kicker">{s.articles}</span><br /><a href={href(lang, `/articulos/${lidom.slug}/`)} style="font:800 18px/1.25 var(--display);color:var(--ink)">{lidom.data.title}</a></p>
+)}
+<a class="link-more" href={href(lang, '/lidom/')}>{s.lidomSection}</a>

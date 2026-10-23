@@ -11,7 +11,8 @@ const other = lang === 'es' ? 'en' : 'es';
 const fullTitle = title ? `${title} · ${site.name}` : site.name;
 const desc = description || (lang === 'en' ? site.tagline_en : site.tagline_es);
 const altHref = href(other, altPath ?? path);
-const navItems = ['episodios', 'noticias', 'fantasy', 'lidom', 'nosotros'];
+// The Fantasy section can be switched off from the CMS (Sitio → Mostrar sección Fantasy).
+const navItems = ['episodios', 'noticias', 'fantasy', 'lidom', 'nosotros'].filter((k) => k !== 'fantasy' || site.showFantasy);
 ---
 <!doctype html>
 <html lang={lang}>

@@ -87,6 +87,7 @@ collections:
         format: json
         fields:
           - { name: beta, label: "Modo beta (oculta el sitio de Google y muestra la etiqueta)", widget: boolean }
+          - { name: showFantasy, label: "Mostrar sección Fantasy (menú, portada y página)", widget: boolean, default: false }
           - { name: name, label: Nombre, widget: string }
           - { name: url, label: "URL pública (https://…)", widget: string }
           - { name: youtubeChannelId, label: ID del canal de YouTube, widget: string, hint: "Empieza con UC. Cambiarlo afecta los episodios." }

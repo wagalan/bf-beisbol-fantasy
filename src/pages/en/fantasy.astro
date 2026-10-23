@@ -1,4 +1,7 @@
 ---
 import View from '../../views/Fantasy.astro';
+import site from '../../data/site.json';
+// Section switched off in the CMS: send visitors to the home page instead.
+if (!site.showFantasy) return Astro.redirect('/en/');
 ---
 <View lang="en" />
