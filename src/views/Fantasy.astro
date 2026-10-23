@@ -1,0 +1,16 @@
+---
+import Base from '../layouts/Base.astro';
+import FantasyBox from '../components/FantasyBox.astro';
+import ArticleCards from '../components/ArticleCards.astro';
+import { t } from '../i18n/ui.js';
+import { articles } from '../lib/articles.js';
+const { lang } = Astro.props;
+const s = t(lang);
+const items = await articles(lang, 'fantasy');
+---
+<Base lang={lang} path="/fantasy/" title="Fantasy">
+  <h1 class="h-page">Fantasy</h1>
+  <div style="padding:16px 0 40px"><FantasyBox lang={lang} notes /></div>
+  <h2 class="h-sec">{s.articles}</h2>
+  <div style="padding-top:16px"><ArticleCards lang={lang} items={items} empty="—" /></div>
+</Base>

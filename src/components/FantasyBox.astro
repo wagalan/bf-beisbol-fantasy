@@ -1,0 +1,29 @@
+---
+import fantasy from '../data/fantasy.json';
+import { t, pick } from '../i18n/ui.js';
+interface Props { lang: 'es' | 'en'; notes?: boolean; }
+const { lang, notes = false } = Astro.props;
+const s = t(lang);
+---
+<section class="stack" aria-labelledby="fantasy-h">
+  <h2 class="h-sec" id="fantasy-h">{s.fantasyBox}</h2>
+  <p class="meta" style="margin:0">{pick(fantasy, 'week', lang)}</p>
+  {notes && <p style="margin:0">{pick(fantasy, 'intro', lang)}</p>}
+  <div class="box-wrap">
+    <table class="box">
+      <thead><tr>
+        <th scope="col">{s.player.toUpperCase()}</th><th scope="col">{s.team}</th><th scope="col">{s.pos}</th><th scope="col">{s.move.toUpperCase()}</th>
+        {notes && <th scope="col">{s.note.toUpperCase()}</th>}
+      </tr></thead>
+      <tbody>
+        {fantasy.rows.map((r) => (
+          <tr>
+            <td class="who">{r.player}</td><td>{r.team}</td><td>{r.pos}</td>
+            <td><span class={`tag tag-${r.move}`}>{s.moves[r.move].toUpperCase()}</span></td>
+            {notes && <td class="note">{pick(r, 'note', lang)}</td>}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>

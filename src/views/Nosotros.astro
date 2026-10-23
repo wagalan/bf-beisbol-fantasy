@@ -1,0 +1,22 @@
+---
+import Base from '../layouts/Base.astro';
+import site from '../data/site.json';
+import { t, pick } from '../i18n/ui.js';
+const { lang } = Astro.props;
+const s = t(lang);
+---
+<Base lang={lang} path="/nosotros/" title={s.nav.nosotros}>
+  <h1 class="h-page">{s.nav.nosotros}</h1>
+  <p class="lede prose" style="margin-bottom:40px;white-space:pre-line">{pick(site, 'about', lang)}</p>
+  <h2 class="h-sec">{s.hosts}</h2>
+  <div class="hosts" style="padding:20px 0 40px">
+    {site.hosts.map((h) => (
+      <div class="host">
+        {h.photo ? <img class="ph" src={h.photo} alt="" width="72" height="72" loading="lazy" /> : <span class="ph" aria-hidden="true"></span>}
+        <span style="display:flex;flex-direction:column"><b style="font:800 19px var(--display)">{h.name}</b><span class="muted" style="font-size:15px">{pick(h, 'role', lang)}{h.team && ` · ${h.team}`}</span></span>
+      </div>
+    ))}
+  </div>
+  <h2 class="h-sec">{s.follow}</h2>
+  <p style="display:flex;gap:24px;font:700 18px var(--display)"><a href={site.youtubeUrl} rel="noopener">YouTube ↗</a><a href={site.instagramUrl} rel="noopener">Instagram ↗</a></p>
+</Base>

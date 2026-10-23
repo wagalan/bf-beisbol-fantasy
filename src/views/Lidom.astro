@@ -1,0 +1,14 @@
+---
+import Base from '../layouts/Base.astro';
+import ArticleCards from '../components/ArticleCards.astro';
+import { t } from '../i18n/ui.js';
+import { articles } from '../lib/articles.js';
+const { lang } = Astro.props;
+const s = t(lang);
+const items = await articles(lang, 'lidom');
+---
+<Base lang={lang} path="/lidom/" title={s.winterBall}>
+  <span class="kicker" style="display:block;margin-top:32px">LIDOM</span>
+  <h1 class="h-page" style="margin-top:4px">{s.winterBall}</h1>
+  <div style="padding-top:24px"><ArticleCards lang={lang} items={items} empty={s.lidomEmpty} /></div>
+</Base>

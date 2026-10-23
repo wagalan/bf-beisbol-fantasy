@@ -1,0 +1,135 @@
+# Sveltia CMS configuration. Every save is a commit to GitHub; the commit
+# triggers a rebuild and redeploy on Cloudflare (about 1-2 minutes).
+backend:
+  name: github
+  repo: wagalan/bf-beisbol-fantasy # <- replace GITHUB_OWNER
+  branch: main
+  commit_messages:
+    create: "cms: crear {{collection}} “{{slug}}”"
+    update: "cms: actualizar {{collection}} “{{slug}}”"
+    delete: "cms: borrar {{collection}} “{{slug}}”"
+    uploadMedia: "cms: subir {{path}}"
+    deleteMedia: "cms: borrar {{path}}"
+
+site_url: /
+logo_url: /img/icon-256.png
+media_folder: public/uploads
+public_folder: /uploads
+
+i18n:
+  structure: multiple_folders
+  locales: [es, en]
+  default_locale: es
+
+collections:
+  - name: articulos
+    label: Artículos
+    label_singular: Artículo
+    description: Notas de fantasy, LIDOM y generales. Escribe en español; la versión en inglés es opcional pero recomendada.
+    folder: src/content/articulos
+    create: true
+    slug: "{{slug}}"
+    extension: md
+    format: frontmatter
+    i18n: true
+    sortable_fields: [date, title, category]
+    summary: "{{date | date('YYYY-MM-DD')}} · {{category}} · {{title}}"
+    fields:
+      - { name: title, label: Título, widget: string, i18n: true }
+      - { name: date, label: Fecha, widget: datetime, time_format: false, format: YYYY-MM-DD, default: "{{now}}", i18n: duplicate }
+      - name: category
+        label: Sección
+        widget: select
+        i18n: duplicate
+        default: general
+        options:
+          - { label: Fantasy, value: fantasy }
+          - { label: LIDOM / Pelota invernal, value: lidom }
+          - { label: General, value: general }
+      - { name: author, label: Autor, widget: string, required: false, i18n: duplicate }
+      - { name: summary, label: Resumen (1-2 líneas), widget: text, required: false, i18n: true }
+      - { name: draft, label: Borrador (no se publica), widget: boolean, default: false, i18n: duplicate }
+      - { name: body, label: Texto, widget: markdown, i18n: true }
+
+  - name: ajustes
+    label: Ajustes del sitio
+    files:
+      - name: fantasy
+        label: Box fantasy de la semana
+        file: src/data/fantasy.json
+        format: json
+        fields:
+          - { name: week_es, label: Semana (ES), widget: string }
+          - { name: week_en, label: Week (EN), widget: string }
+          - { name: intro_es, label: Introducción (ES), widget: text }
+          - { name: intro_en, label: Intro (EN), widget: text }
+          - name: rows
+            label: Jugadores
+            widget: list
+            summary: "{{move}} · {{player}} ({{team}}, {{pos}})"
+            fields:
+              - { name: player, label: Jugador, widget: string }
+              - { name: team, label: Equipo (abreviatura), widget: string }
+              - { name: pos, label: Posición, widget: string }
+              - name: move
+                label: Movida
+                widget: select
+                options:
+                  - { label: Agregar, value: add }
+                  - { label: Mantener, value: hold }
+                  - { label: Soltar, value: drop }
+              - { name: note_es, label: Por qué (ES), widget: string, required: false }
+              - { name: note_en, label: Why (EN), widget: string, required: false }
+
+      - name: site
+        label: Sitio, enlaces y anfitriones
+        file: src/data/site.json
+        format: json
+        fields:
+          - { name: beta, label: "Modo beta (oculta el sitio de Google y muestra la etiqueta)", widget: boolean }
+          - { name: name, label: Nombre, widget: string }
+          - { name: url, label: "URL pública (https://…)", widget: string }
+          - { name: youtubeChannelId, label: ID del canal de YouTube, widget: string, hint: "Empieza con UC. Cambiarlo afecta los episodios." }
+          - { name: youtubeUrl, label: Enlace de YouTube, widget: string }
+          - { name: instagramUrl, label: Enlace de Instagram, widget: string }
+          - { name: tagline_es, label: Lema (ES), widget: string }
+          - { name: tagline_en, label: Tagline (EN), widget: string }
+          - { name: about_es, label: Quiénes somos (ES), widget: text }
+          - { name: about_en, label: About us (EN), widget: text }
+          - name: hosts
+            label: Anfitriones
+            widget: list
+            summary: "{{name}}"
+            fields:
+              - { name: name, label: Nombre, widget: string }
+              - { name: role_es, label: Rol (ES), widget: string }
+              - { name: role_en, label: Role (EN), widget: string }
+              - { name: team, label: Equipo favorito, widget: string, required: false }
+              - { name: photo, label: Foto (cuadrada), widget: image, required: false }
+
+      - name: feeds
+        label: Fuentes de noticias (RSS)
+        file: src/data/feeds.json
+        format: json
+        description: Las fuentes que el sitio lee cada 30 minutos. Máximo 40. Los cambios se aplican después del próximo despliegue.
+        fields:
+          - { name: maxAgeDays, label: Ocultar noticias de más de (días), widget: number, value_type: int, min: 1, max: 60 }
+          - { name: maxItems, label: Máximo de titulares guardados, widget: number, value_type: int, min: 20, max: 150 }
+          - name: teams
+            label: Botones de filtro (equipos)
+            widget: list
+            summary: "{{id}} · {{label}}"
+            fields:
+              - { name: id, label: "Código (minúsculas, ej. nyy)", widget: string, pattern: ['^[a-z0-9-]+$', 'Solo minúsculas, números y guiones'] }
+              - { name: label, label: Texto del botón, widget: string }
+          - name: feeds
+            label: Fuentes
+            widget: list
+            summary: "{{enabled}} · {{team}} · {{name}}"
+            fields:
+              - { name: id, label: "ID único (ej. nyy-mlbtr)", widget: string, pattern: ['^[a-z0-9-]+$', 'Solo minúsculas, números y guiones'] }
+              - { name: name, label: Nombre de la fuente, widget: string }
+              - { name: url, label: URL del RSS, widget: string, pattern: ['^https://', 'Debe empezar con https://'] }
+              - { name: team, label: "Equipo (código de un botón de filtro)", widget: string }
+              - { name: lang, label: Idioma, widget: select, options: [{ label: Inglés, value: en }, { label: Español, value: es }] }
+              - { name: enabled, label: Activa, widget: boolean, default: true }

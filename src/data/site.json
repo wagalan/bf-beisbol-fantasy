@@ -1,0 +1,35 @@
+{
+  "beta": true,
+  "name": "BF Béisbol Fantasy",
+  "url": "https://beisbolfantasy.example",
+  "youtubeChannelId": "UCvc-JRJ-e-PJRicZkrd_QCQ",
+  "youtubeUrl": "https://www.youtube.com/@BeisbolFantasy",
+  "instagramUrl": "https://www.instagram.com/beisbolfantasypodcast/",
+  "tagline_es": "Un podcast de fanáticos del béisbol para fanáticos del béisbol.",
+  "tagline_en": "A podcast by baseball fans, for baseball fans.",
+  "about_es": "[Quiénes somos: cómo nació el podcast, cada cuánto sale y qué cubrimos.]",
+  "about_en": "[About us: how the podcast started, how often it comes out and what we cover.]",
+  "hosts": [
+    {
+      "name": "[Nombre]",
+      "role_es": "[Rol]",
+      "role_en": "[Role]",
+      "team": "[Equipo favorito]",
+      "photo": ""
+    },
+    {
+      "name": "[Nombre]",
+      "role_es": "[Rol]",
+      "role_en": "[Role]",
+      "team": "[Equipo favorito]",
+      "photo": ""
+    },
+    {
+      "name": "[Nombre]",
+      "role_es": "[Rol]",
+      "role_en": "[Role]",
+      "team": "[Equipo favorito]",
+      "photo": ""
+    }
+  ]
+}

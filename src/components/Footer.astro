@@ -1,0 +1,16 @@
+---
+import site from '../data/site.json';
+import { t } from '../i18n/ui.js';
+const { lang } = Astro.props;
+const s = t(lang);
+---
+<footer class="site">
+  <div class="wrap">
+    <img src="/img/logo-white.png" alt={site.name} width="820" height="279" loading="lazy" />
+    <div style="display:flex;gap:24px">
+      <a href={site.youtubeUrl} rel="noopener">YouTube</a>
+      <a href={site.instagramUrl} rel="noopener">Instagram</a>
+    </div>
+    <p>{s.footerNote} © {new Date().getFullYear()} {site.name}.</p>
+  </div>
+</footer>

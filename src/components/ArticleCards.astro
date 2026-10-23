@@ -1,0 +1,19 @@
+---
+import { t, href } from '../i18n/ui.js';
+interface Props { lang: 'es' | 'en'; items: any[]; empty?: string; }
+const { lang, items, empty } = Astro.props;
+const s = t(lang);
+const fmt = (d) => d.toLocaleDateString(lang === 'en' ? 'en-US' : 'es-DO', { day: 'numeric', month: 'short', year: 'numeric' });
+---
+{items.length === 0 ? <p class="state">{empty}</p> : (
+  <div class="cards">
+    {items.map((a) => (
+      <article class="card">
+        <span class="kicker">{a.data.category === 'lidom' ? 'LIDOM' : a.data.category === 'fantasy' ? 'Fantasy' : s.articles}</span>
+        <h3><a href={href(lang, `/articulos/${a.slug}/`)}>{a.data.title}</a></h3>
+        <span class="meta">{fmt(a.data.date)}{a.data.author && ` · ${a.data.author}`}</span>
+        {a.data.summary && <p style="margin:0">{a.data.summary}</p>}
+      </article>
+    ))}
+  </div>
+)}

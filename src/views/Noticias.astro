@@ -1,0 +1,12 @@
+---
+import Base from '../layouts/Base.astro';
+import NewsList from '../components/NewsList.astro';
+import { t } from '../i18n/ui.js';
+const { lang } = Astro.props;
+const s = t(lang);
+---
+<Base lang={lang} path="/noticias/" title={s.allNews}>
+  <h1 class="h-page">{s.allNews}</h1>
+  <p class="lede" style="max-width:760px;margin-bottom:28px">{s.newsNote}</p>
+  <NewsList lang={lang} limit={150} layout="wide" />
+</Base>

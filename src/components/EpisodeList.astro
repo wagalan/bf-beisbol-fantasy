@@ -1,0 +1,14 @@
+---
+import { t, href } from '../i18n/ui.js';
+interface Props { lang: 'es' | 'en'; skip?: number; limit?: number; heading?: string; more?: boolean; }
+const { lang, skip = 0, limit = 500, heading, more = false } = Astro.props;
+const s = t(lang);
+const i18n = JSON.stringify({ episode: s.episode, videosEmpty: s.videosEmpty });
+---
+<section class="stack" data-videos="archive" data-lang={lang} data-skip={skip} data-limit={limit} data-ep-href={href(lang, '/episodios/')} data-i18n={i18n}>
+  {heading && <h2 class="h-sec">{heading}</h2>}
+  <ul class="eps">
+    {Array.from({ length: Math.min(limit, 5) }).map(() => <li><span style="display:block;padding:14px 0"><span class="skeleton" style="display:block"></span></span></li>)}
+  </ul>
+  {more && <a class="link-more" href={href(lang, '/episodios/')}>{s.allEpisodes}</a>}
+</section>

@@ -1,0 +1,16 @@
+---
+import site from '../data/site.json';
+import { t } from '../i18n/ui.js';
+interface Props { lang: 'es' | 'en'; useQuery?: boolean; heading?: 'h1' | 'h2'; }
+const { lang, useQuery = false, heading = 'h1' } = Astro.props;
+const s = t(lang);
+const i18n = JSON.stringify({ episode: s.episode, newEpisode: s.newEpisode, play: s.play, videosEmpty: s.videosEmpty });
+const H = heading;
+---
+<section class="lead stack" data-videos="lead" data-lang={lang} data-i18n={i18n} data-use-query={useQuery ? '1' : undefined}>
+  <span class="kicker" data-f="kicker">{s.newEpisode}</span>
+  <H data-f="title"><span class="skeleton" style="display:block;height:2.1em"></span></H>
+  <p class="lede" data-f="desc"></p>
+  <div class="player" data-f="player"></div>
+  <span class="meta"><span data-f="meta"></span> · <a data-f="yt" href={site.youtubeUrl} rel="noopener">{s.watchOnYouTube}</a></span>
+</section>

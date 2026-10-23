@@ -1,0 +1,14 @@
+---
+import Base from '../layouts/Base.astro';
+import LeadEpisode from '../components/LeadEpisode.astro';
+import EpisodeList from '../components/EpisodeList.astro';
+import { t } from '../i18n/ui.js';
+const { lang } = Astro.props;
+const s = t(lang);
+---
+<Base lang={lang} path="/episodios/" title={s.nav.episodios}>
+  <div class="row">
+    <div class="main" style="flex-basis:100%;padding-right:0"><LeadEpisode lang={lang} useQuery /></div>
+  </div>
+  <div style="padding-top:40px"><EpisodeList lang={lang} heading={s.archive} /></div>
+</Base>

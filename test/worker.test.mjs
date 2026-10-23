@@ -1,0 +1,125 @@
+// Run with: npm test
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { parseNewsFeed, parseYouTubeFeed, mergeNews, episodeNumber, isoDuration, cleanText } from '../worker/parse.js';
+import { refreshAll, pickBatch, KEYS } from '../worker/refresh.js';
+
+const fx = (n) => readFileSync(new URL(`./fixtures/${n}`, import.meta.url), 'utf8');
+const NOW = Date.parse('2026-10-23T19:00:00Z');
+const FEEDS = {
+  maxAgeDays: 10,
+  maxItems: 150,
+  teams: [{ id: 'mlb', label: 'MLB' }, { id: 'nyy', label: 'NYY' }],
+  feeds: [
+    { id: 'mlb-en', name: 'MLB.com', url: 'https://feeds.test/mlb-en.xml', team: 'mlb', lang: 'en' },
+    { id: 'nyy-mlb', name: 'MLB.com · Yankees', url: 'https://feeds.test/nyy-mlb.xml', team: 'nyy', lang: 'en' },
+    { id: 'nyy-mlbtr', name: 'MLB Trade Rumors', url: 'https://feeds.test/mlbtr-nyy.xml', team: 'nyy', lang: 'en' },
+    { id: 'broken', name: 'Broken', url: 'https://feeds.test/404.xml', team: 'mlb', lang: 'en' },
+  ],
+};
+const SITE = { youtubeChannelId: 'UCvc-JRJ-e-PJRicZkrd_QCQ' };
+
+function fakeKV() {
+  const m = new Map();
+  return {
+    m,
+    async get(k, type) { const v = m.get(k); return v == null ? null : type === 'json' ? JSON.parse(v) : v; },
+    async put(k, v) { m.set(k, v); },
+  };
+}
+function fakeFetch(url) {
+  const name = url.includes('youtube.com/feeds') ? 'youtube.xml' : url.split('/').pop();
+  try {
+    return Promise.resolve(new Response(fx(name)));
+  } catch {
+    return Promise.resolve(new Response('nope', { status: 404 }));
+  }
+}
+
+test('parses MLB RSS, drops unsafe links', () => {
+  const items = parseNewsFeed(fx('mlb-en.xml'), FEEDS.feeds[0], { now: NOW });
+  assert.equal(items.length, 4);
+  assert.ok(items.every((i) => i.url.startsWith('https://')));
+  assert.equal(items[0].author, 'Thomas Harrigan');
+  assert.match(items[3].title, /& permanent GM/);
+});
+
+test('drops stale items (old prospects list, evergreen trivia)', () => {
+  const items = parseNewsFeed(fx('nyy-mlb.xml'), FEEDS.feeds[1], { now: NOW });
+  assert.deepEqual(items.map((i) => i.title.slice(0, 7)), ['Cashman', 'Boone t']);
+});
+
+test('MLBTR: excerpt only, entities decoded, summary capped', () => {
+  const items = parseNewsFeed(fx('mlbtr-nyy.xml'), FEEDS.feeds[2], { now: NOW });
+  assert.equal(items.length, 24);
+  assert.ok(items[0].summary.length <= 221);
+  assert.match(items[0].summary, /New York’s/);
+});
+
+test('league and team copies of a story merge into one, tagged with both teams', () => {
+  const a = parseNewsFeed(fx('mlb-en.xml'), FEEDS.feeds[0], { now: NOW });
+  const b = parseNewsFeed(fx('nyy-mlb.xml'), FEEDS.feeds[1], { now: NOW });
+  const merged = mergeNews([], [...a, ...b], ['mlb-en', 'nyy-mlb'], { now: NOW });
+  const cashman = merged.filter((i) => i.title.startsWith('Cashman'));
+  assert.equal(cashman.length, 1);
+  assert.deepEqual(cashman[0].teams.sort(), ['mlb', 'nyy']);
+  assert.equal(cashman[0].source, 'MLB.com · Yankees');
+});
+
+test('YouTube Atom: episodes, shorts flagged, numbers parsed', () => {
+  const v = parseYouTubeFeed(fx('youtube.xml'));
+  assert.equal(v.length, 3);
+  assert.equal(v[0].episode, 42);
+  assert.equal(v[0].title, 'Episodio 42: Previa de la Serie Mundial & waivers');
+  assert.equal(v[1].short, true);
+  assert.equal(v[2].episode, 41);
+});
+
+test('helpers', () => {
+  assert.equal(isoDuration('PT1H2M3S'), 3723);
+  assert.equal(isoDuration('PT59S'), 59);
+  assert.equal(episodeNumber('Sin número'), null);
+  assert.equal(episodeNumber('BF #105 - Draft'), 105);
+  assert.equal(cleanText('<b>a</b>&amp;b &#8217; c'), 'a &b ’ c');
+});
+
+test('batches rotate through every feed', () => {
+  const f = [1, 2, 3, 4, 5, 6, 7];
+  const seen = [0, 1, 2].flatMap((s) => pickBatch(f, s, 3));
+  assert.deepEqual(seen.sort(), f);
+});
+
+test('full refresh writes news, videos and status; broken feed reported, not fatal', async () => {
+  const env = { BF_KV: fakeKV() };
+  const status = await refreshAll(env, FEEDS, SITE, { fetchImpl: fakeFetch, now: NOW });
+  const news = JSON.parse(env.BF_KV.m.get(KEYS.news));
+  const videos = JSON.parse(env.BF_KV.m.get(KEYS.videos));
+  assert.ok(news.items.length >= 25);
+  assert.equal(videos.items.length, 3);
+  assert.equal(videos.mode, 'rss');
+  assert.equal(status.feeds.broken.ok, false);
+  assert.equal(status.feeds['mlb-en'].ok, true);
+  // Sorted newest first
+  const t = news.items.map((i) => i.published);
+  assert.deepEqual([...t].sort().reverse(), t);
+});
+
+test('a failing feed keeps its previous items', async () => {
+  const env = { BF_KV: fakeKV() };
+  await refreshAll(env, FEEDS, SITE, { fetchImpl: fakeFetch, now: NOW });
+  const before = JSON.parse(env.BF_KV.m.get(KEYS.news)).items.filter((i) => i.feed === 'nyy-mlbtr').length;
+  const failing = (url) => (url.includes('mlbtr') ? Promise.reject(new Error('timeout')) : fakeFetch(url));
+  await refreshAll(env, FEEDS, SITE, { fetchImpl: failing, now: NOW + 60000 });
+  const after = JSON.parse(env.BF_KV.m.get(KEYS.news)).items.filter((i) => i.feed === 'nyy-mlbtr').length;
+  assert.equal(after, before);
+});
+
+test('CPU budget: parsing a heavy MLBTR feed stays small', () => {
+  const xml = fx('mlbtr-nyy.xml');
+  const t0 = performance.now();
+  for (let i = 0; i < 10; i++) parseNewsFeed(xml, FEEDS.feeds[2], { now: NOW });
+  const ms = (performance.now() - t0) / 10;
+  console.log(`  MLBTR 630 KB feed: ${ms.toFixed(2)} ms per parse`);
+  assert.ok(ms < 20);
+});

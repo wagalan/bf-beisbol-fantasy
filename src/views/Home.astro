@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+import LeadEpisode from '../components/LeadEpisode.astro';
+import NewsList from '../components/NewsList.astro';
+import FantasyBox from '../components/FantasyBox.astro';
+import EpisodeList from '../components/EpisodeList.astro';
+import { t, href } from '../i18n/ui.js';
+import { articles } from '../lib/articles.js';
+const { lang } = Astro.props;
+const s = t(lang);
+const lidom = (await articles(lang, 'lidom'))[0];
+---
+<Base lang={lang} path="/">
+  <div class="row">
+    <div class="main"><LeadEpisode lang={lang} /></div>
+    <aside class="side"><NewsList lang={lang} heading={s.latestNews} limit={7} more /></aside>
+  </div>
+  <div class="row">
+    <div class="main"><FantasyBox lang={lang} /></div>
+    <aside class="side stack">
+      <h2 class="h-sec">{s.winterBall}</h2>
+      {lidom ? (
+        <>
+          <h3 style="margin:0;font:800 21px/1.2 var(--display)"><a href={href(lang, `/articulos/${lidom.slug}/`)} style="color:var(--ink)">{lidom.data.title}</a></h3>
+          {lidom.data.summary && <p style="margin:0" class="muted">{lidom.data.summary}</p>}
+        </>
+      ) : <p class="muted" style="margin:0">{s.lidomEmpty}</p>}
+      <a class="link-more" href={href(lang, '/lidom/')}>{s.lidomSection}</a>
+    </aside>
+  </div>
+  <div style="padding:40px 0 0">
+    <EpisodeList lang={lang} heading={s.archive} skip={1} limit={5} more />
+  </div>
+</Base>

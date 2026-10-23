@@ -1,0 +1,11 @@
+---
+import Base from '../layouts/Base.astro';
+import { t, href } from '../i18n/ui.js';
+const { lang } = Astro.props;
+const s = t(lang);
+---
+<Base lang={lang} path="/404/" title="404">
+  <h1 class="h-page">404</h1>
+  <p class="lede">{s.notFound}</p>
+  <p><a class="link-more" href={href(lang, '/')}>{s.backHome}</a></p>
+</Base>

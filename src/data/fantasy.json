@@ -1,0 +1,13 @@
+{
+  "week_es": "[Semana del …]",
+  "week_en": "[Week of …]",
+  "intro_es": "[Una línea sobre la semana: qué cambió y por qué importa para tu liga.]",
+  "intro_en": "[One line on the week: what changed and why it matters for your league.]",
+  "rows": [
+    { "player": "[Jugador]", "team": "[EQ]", "pos": "[POS]", "move": "add", "note_es": "[Por qué]", "note_en": "[Why]" },
+    { "player": "[Jugador]", "team": "[EQ]", "pos": "[POS]", "move": "add", "note_es": "[Por qué]", "note_en": "[Why]" },
+    { "player": "[Jugador]", "team": "[EQ]", "pos": "[POS]", "move": "hold", "note_es": "[Por qué]", "note_en": "[Why]" },
+    { "player": "[Jugador]", "team": "[EQ]", "pos": "[POS]", "move": "drop", "note_es": "[Por qué]", "note_en": "[Why]" },
+    { "player": "[Jugador]", "team": "[EQ]", "pos": "[POS]", "move": "drop", "note_es": "[Por qué]", "note_en": "[Why]" }
+  ]
+}

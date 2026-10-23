@@ -1,0 +1,23 @@
+{
+  "maxAgeDays": 10,
+  "maxItems": 150,
+  "teams": [
+    { "id": "mlb", "label": "MLB" },
+    { "id": "nyy", "label": "NYY" },
+    { "id": "lad", "label": "LAD" },
+    { "id": "nym", "label": "NYM" },
+    { "id": "bos", "label": "BOS" }
+  ],
+  "feeds": [
+    { "id": "mlb-en", "name": "MLB.com", "url": "https://www.mlb.com/feeds/news/rss.xml", "team": "mlb", "lang": "en", "enabled": true },
+    { "id": "mlb-es", "name": "MLB.com en español", "url": "https://www.mlb.com/es/feeds/news/rss.xml", "team": "mlb", "lang": "es", "enabled": true },
+    { "id": "nyy-mlb", "name": "MLB.com · Yankees", "url": "https://www.mlb.com/yankees/feeds/news/rss.xml", "team": "nyy", "lang": "en", "enabled": true },
+    { "id": "nyy-mlbtr", "name": "MLB Trade Rumors", "url": "https://www.mlbtraderumors.com/new-york-yankees/feed", "team": "nyy", "lang": "en", "enabled": true },
+    { "id": "lad-mlb", "name": "MLB.com · Dodgers", "url": "https://www.mlb.com/dodgers/feeds/news/rss.xml", "team": "lad", "lang": "en", "enabled": true },
+    { "id": "lad-mlbtr", "name": "MLB Trade Rumors", "url": "https://www.mlbtraderumors.com/los-angeles-dodgers/feed", "team": "lad", "lang": "en", "enabled": true },
+    { "id": "nym-mlb", "name": "MLB.com · Mets", "url": "https://www.mlb.com/mets/feeds/news/rss.xml", "team": "nym", "lang": "en", "enabled": true },
+    { "id": "nym-mlbtr", "name": "MLB Trade Rumors", "url": "https://www.mlbtraderumors.com/new-york-mets/feed", "team": "nym", "lang": "en", "enabled": true },
+    { "id": "bos-mlb", "name": "MLB.com · Red Sox", "url": "https://www.mlb.com/redsox/feeds/news/rss.xml", "team": "bos", "lang": "en", "enabled": true },
+    { "id": "bos-mlbtr", "name": "MLB Trade Rumors", "url": "https://www.mlbtraderumors.com/boston-red-sox/feed", "team": "bos", "lang": "en", "enabled": true }
+  ]
+}

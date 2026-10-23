@@ -1,0 +1,23 @@
+---
+import feeds from '../data/feeds.json';
+import { t, href } from '../i18n/ui.js';
+interface Props { lang: 'es' | 'en'; limit?: number; layout?: 'compact' | 'wide'; heading?: string; more?: boolean; }
+const { lang, limit = 8, layout = 'compact', heading, more = false } = Astro.props;
+const s = t(lang);
+const i18n = JSON.stringify({ newsEmpty: s.newsEmpty, newsError: s.newsError, updated: s.updated });
+---
+<section class="stack" data-news data-lang={lang} data-limit={limit} data-layout={layout} data-i18n={i18n} aria-labelledby={`news-h-${layout}`}>
+  {heading && <h2 class="h-sec" id={`news-h-${layout}`}>{heading}</h2>}
+  <div class="chips" role="group" aria-label={s.filterByTeam}>
+    <button type="button" class="chip" data-team="all" aria-pressed="true">{s.all}</button>
+    {feeds.teams.map((tm) => <button type="button" class="chip" data-team={tm.id} aria-pressed="false">{tm.label}</button>)}
+  </div>
+  <ul class={`news ${layout}`} aria-live="polite">
+    {Array.from({ length: Math.min(limit, 6) }).map(() => (
+      <li><span style="display:block;padding:10px 0"><span class="skeleton" style="display:block;width:40%;margin-bottom:6px"></span><span class="skeleton" style="display:block;height:2.2em"></span></span></li>
+    ))}
+  </ul>
+  <span class="meta" data-updated></span>
+  <noscript><p class="state">{s.newsError}</p></noscript>
+  {more && <a class="link-more" href={href(lang, '/noticias/')}>{s.moreNews}</a>}
+</section>

@@ -1,0 +1,67 @@
+---
+import '../styles/global.css';
+import site from '../data/site.json';
+import { t, href } from '../i18n/ui.js';
+import Footer from '../components/Footer.astro';
+
+interface Props { lang: 'es' | 'en'; title?: string; description?: string; path: string; altPath?: string; }
+const { lang, title, description, path, altPath } = Astro.props;
+const s = t(lang);
+const other = lang === 'es' ? 'en' : 'es';
+const fullTitle = title ? `${title} · ${site.name}` : site.name;
+const desc = description || (lang === 'en' ? site.tagline_en : site.tagline_es);
+const altHref = href(other, altPath ?? path);
+const navItems = ['episodios', 'noticias', 'fantasy', 'lidom', 'nosotros'];
+---
+<!doctype html>
+<html lang={lang}>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{fullTitle}</title>
+  <meta name="description" content={desc} />
+  {site.beta && <meta name="robots" content="noindex, nofollow" />}
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="alternate" hreflang={lang} href={new URL(href(lang, path), Astro.site)} />
+  <link rel="alternate" hreflang={other} href={new URL(altHref, Astro.site)} />
+  <meta property="og:title" content={fullTitle} />
+  <meta property="og:description" content={desc} />
+  <meta property="og:image" content={new URL('/img/icon-256.png', Astro.site)} />
+  <meta property="og:locale" content={lang === 'en' ? 'en_US' : 'es_DO'} />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Libre+Franklin:wght@700;800;900&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <a class="skip" href="#main">{s.skip}</a>
+  <div class="wrap">
+    <div class="strip">
+      <span><span data-today={lang}>{s.season} {new Date().getFullYear()}</span>{site.beta && <> · <span class="beta">{s.beta}</span></>}</span>
+      <span class="langs">
+        <a href={href('es', lang === 'es' ? path : altPath ?? path)} aria-current={lang === 'es' ? 'true' : undefined} lang="es">ES</a>
+        <span aria-hidden="true">/</span>
+        <a href={href('en', lang === 'en' ? path : altPath ?? path)} aria-current={lang === 'en' ? 'true' : undefined} lang="en">EN</a>
+      </span>
+    </div>
+    <header class="masthead">
+      <a href={href(lang, '/')} aria-label={`${site.name}, ${lang === 'en' ? 'home' : 'inicio'}`}>
+        <img src="/img/logo-blue.png" alt={site.name} width="820" height="279" />
+      </a>
+      <nav class="nav" aria-label={lang === 'en' ? 'Main' : 'Principal'}>
+        {navItems.map((k) => (
+          <a href={href(lang, `/${k}/`)} aria-current={path === `/${k}/` ? 'page' : undefined}>{s.nav[k]}</a>
+        ))}
+      </nav>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+  </div>
+  <Footer lang={lang} />
+  <script>
+    import { init } from '../lib/client.js';
+    init();
+  </script>
+</body>
+</html>

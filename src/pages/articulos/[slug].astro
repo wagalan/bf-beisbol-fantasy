@@ -1,0 +1,11 @@
+---
+import View from '../../views/Article.astro';
+import { articles } from '../../lib/articles.js';
+export async function getStaticPaths() {
+  const mine = await articles('es');
+  const other = new Set((await articles('en')).map((a) => a.slug));
+  return mine.map((entry) => ({ params: { slug: entry.slug }, props: { entry, hasTranslation: other.has(entry.slug) } }));
+}
+const { entry, hasTranslation } = Astro.props;
+---
+<View lang="es" entry={entry} slug={Astro.params.slug} hasTranslation={hasTranslation} />
