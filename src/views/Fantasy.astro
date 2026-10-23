@@ -11,6 +11,10 @@ const items = await articles(lang, 'fantasy');
 <Base lang={lang} path="/fantasy/" title="Fantasy">
   <h1 class="h-page">Fantasy</h1>
   <div style="padding:16px 0 40px"><FantasyBox lang={lang} notes /></div>
-  <h2 class="h-sec">{s.articles}</h2>
-  <div style="padding-top:16px"><ArticleCards lang={lang} items={items} empty="—" /></div>
+  {items.length > 0 && (
+    <>
+      <h2 class="h-sec">{s.articles}</h2>
+      <div style="padding-top:16px"><ArticleCards lang={lang} items={items} /></div>
+    </>
+  )}
 </Base>

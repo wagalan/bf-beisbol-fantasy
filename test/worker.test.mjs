@@ -247,3 +247,11 @@ test('ALL-CAPS headlines become sentence case; normal ones untouched', async () 
     assert.equal(normalizeTitle(t), t);
   }
 });
+
+test('stored items from earlier runs get the cleanup too', () => {
+  const old = [{ key: 'es:lidom.com/videos/palco', title: 'Palco LIDOM ⚾️ Ep.2 📺 TIGRES LANZAN NO HITTER!', url: 'https://lidom.com/videos/palco-97673.html', published: new Date(NOW - 3600e3).toISOString(), feed: 'lidom', lang: 'es', teams: ['lidom'], source: 'LIDOM' }];
+  // The sitemap no longer lists it, and LIDOM accumulates (not in refreshed ids).
+  const [it] = mergeNews(old, [], [], { now: NOW });
+  assert.equal(it.title, 'Palco LIDOM Ep.2 Tigres lanzan no hitter!');
+  assert.equal(it.video, true);
+});

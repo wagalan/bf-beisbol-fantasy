@@ -3,7 +3,7 @@ import { t, href } from '../i18n/ui.js';
 interface Props { lang: 'es' | 'en'; items: any[]; empty?: string; }
 const { lang, items, empty } = Astro.props;
 const s = t(lang);
-const fmt = (d) => d.toLocaleDateString(lang === 'en' ? 'en-US' : 'es-DO', { day: 'numeric', month: 'short', year: 'numeric' });
+const fmt = (d) => d.toLocaleDateString(lang === 'en' ? 'en-US' : 'es-DO', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 ---
 {items.length === 0 ? <p class="state">{empty}</p> : (
   <div class="cards">

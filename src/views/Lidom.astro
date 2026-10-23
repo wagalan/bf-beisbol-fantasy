@@ -11,11 +11,16 @@ const items = await articles(lang, 'lidom');
 <Base lang={lang} path="/lidom/" title={s.winterBall}>
   <span class="kicker" style="display:block;margin-top:32px">LIDOM</span>
   <h1 class="h-page" style="margin-top:4px">{s.winterBall}</h1>
+  <!-- The articles column only appears once there is at least one LIDOM article. -->
   <div class="row">
-    <div class="main"><NewsList lang={lang} team="lidom" heading={s.lidomNews} limit={30} layout="wide" /></div>
-    <aside class="side stack">
-      <h2 class="h-sec">{s.articles}</h2>
-      <ArticleCards lang={lang} items={items} empty={s.lidomEmpty} />
-    </aside>
+    <div class="main" style={items.length ? undefined : 'flex-basis:100%;padding-right:0'}>
+      <NewsList lang={lang} team="lidom" heading={s.lidomNews} limit={30} layout="wide" />
+    </div>
+    {items.length > 0 && (
+      <aside class="side stack">
+        <h2 class="h-sec">{s.articles}</h2>
+        <ArticleCards lang={lang} items={items} />
+      </aside>
+    )}
   </div>
 </Base>

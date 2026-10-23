@@ -205,7 +205,9 @@ export function mergeNews(stored, fresh, refreshedFeedIds, { now = Date.now(), m
     if (refreshed.has(it.feed)) continue;
     if (active && !active.has(it.feed)) continue;
     if (Date.parse(it.published) < minTime) continue;
-    add(it);
+    // Items kept from earlier runs get the same headline cleanup as fresh
+    // ones (cheap, and idempotent), so rule changes apply to them too.
+    add({ ...it, title: normalizeTitle(stripEmoji(it.title)), video: isVideoUrl(it.url) });
   }
   for (const it of fresh) add(it);
   return [...byKey.values()]

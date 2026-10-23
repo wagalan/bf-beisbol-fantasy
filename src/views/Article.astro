@@ -12,7 +12,7 @@ const backPath = d.category === 'lidom' ? '/lidom/' : d.category === 'fantasy' ?
   <article class="prose" style="padding-bottom:40px">
     <span class="kicker" style="display:block;margin-top:32px">{d.category === 'lidom' ? 'LIDOM' : d.category === 'fantasy' ? 'Fantasy' : s.articles}</span>
     <h1 class="h-page" style="margin-top:4px">{d.title}</h1>
-    <p class="meta">{d.date.toLocaleDateString(lang === 'en' ? 'en-US' : 'es-DO', { day: 'numeric', month: 'long', year: 'numeric' })}{d.author && ` · ${d.author}`}</p>
+    <p class="meta">{d.date.toLocaleDateString(lang === 'en' ? 'en-US' : 'es-DO', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}{d.author && ` · ${d.author}`}</p>
     {d.summary && <p class="lede">{d.summary}</p>}
     <Content />
     <p><a class="link-more" href={href(lang, backPath)}>←</a></p>
