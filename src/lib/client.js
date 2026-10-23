@@ -107,6 +107,12 @@ function initNews(root) {
 
 const thumb = (id) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 
+/** The video in the page's language when the channel added a translation in YouTube Studio. */
+function localize(v, lang) {
+  const t = v.i18n?.[lang];
+  return t ? { ...v, title: t.title || v.title, description: t.description || v.description } : v;
+}
+
 /** Click-to-load player: no YouTube iframe (or cookies) until the visitor presses play. */
 export function mountPlayer(box, video, s) {
   box.replaceChildren(
@@ -167,12 +173,13 @@ function initVideos(root) {
       if (mode === 'lead') {
         const wanted = new URLSearchParams(location.search).get('v');
         const v = (root.dataset.useQuery && vids.find((x) => x.id === wanted)) || vids[0];
-        fillLead(root, v, s, lang);
+        fillLead(root, localize(v, lang), s, lang);
         return;
       }
       const ul = root.querySelector('.eps');
       ul.replaceChildren();
-      for (const v of vids.slice(skip, skip + limit)) {
+      for (const raw of vids.slice(skip, skip + limit)) {
+        const v = localize(raw, lang);
         ul.append(
           el(
             'li',
@@ -195,7 +202,43 @@ function initVideos(root) {
     });
 }
 
+// ---------- Clips (YouTube Shorts) ----------
+
+function initClips(root) {
+  const lang = root.dataset.lang;
+  const s = JSON.parse(root.dataset.i18n);
+  const limit = Number(root.dataset.limit || 12);
+  const row = root.querySelector('.clips');
+  getJSON('/api/videos?shorts=1')
+    .then((d) => {
+      const clips = d.items.filter((v) => v.short).slice(0, limit);
+      if (!clips.length) {
+        root.hidden = true; // no Shorts: hide the whole strip
+        return;
+      }
+      row.replaceChildren();
+      for (const raw of clips) {
+        const v = localize(raw, lang);
+        const box = el('div', { class: 'player clip-player' });
+        mountPlayer(box, v, s);
+        row.append(
+          el(
+            'li',
+            { class: 'clip' },
+            box,
+            el('span', { class: 'clip-title', text: v.title.replace(/\s*#shorts?\b/gi, '').trim() }),
+            el('span', { class: 'meta', text: fmtDate(v.published, lang) }),
+          ),
+        );
+      }
+    })
+    .catch(() => {
+      root.hidden = true;
+    });
+}
+
 export function init() {
+  document.querySelectorAll('[data-clips]').forEach(initClips);
   document.querySelectorAll('[data-news]').forEach(initNews);
   document.querySelectorAll('[data-videos]').forEach(initVideos);
   document.querySelectorAll('[data-today]').forEach((n) => {

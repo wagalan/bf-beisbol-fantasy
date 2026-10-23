@@ -1,0 +1,17 @@
+---
+import site from '../data/site.json';
+import { t } from '../i18n/ui.js';
+interface Props { lang: 'es' | 'en'; limit?: number; }
+const { lang, limit = 12 } = Astro.props;
+const s = t(lang);
+const i18n = JSON.stringify({ play: s.play });
+---
+<section class="stack clips-sec" data-clips data-lang={lang} data-limit={limit} data-i18n={i18n} aria-labelledby="clips-h">
+  <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px;border-bottom:3px solid var(--ink)">
+    <h2 class="h-sec" id="clips-h" style="border:0;margin:0">{s.clips}</h2>
+    <a class="link-more" href={`${site.youtubeUrl}/shorts`} rel="noopener">{s.allClips}</a>
+  </div>
+  <ul class="clips">
+    {Array.from({ length: 5 }).map(() => <li class="clip"><span class="player clip-player skeleton"></span></li>)}
+  </ul>
+</section>

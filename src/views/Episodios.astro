@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import LeadEpisode from '../components/LeadEpisode.astro';
 import EpisodeList from '../components/EpisodeList.astro';
+import Clips from '../components/Clips.astro';
 import { t } from '../i18n/ui.js';
 const { lang } = Astro.props;
 const s = t(lang);
@@ -10,5 +11,6 @@ const s = t(lang);
   <div class="row">
     <div class="main" style="flex-basis:100%;padding-right:0"><LeadEpisode lang={lang} useQuery /></div>
   </div>
+  <div class="row"><div class="main" style="flex-basis:100%;padding-right:0"><Clips lang={lang} limit={24} /></div></div>
   <div style="padding-top:40px"><EpisodeList lang={lang} heading={s.archive} /></div>
 </Base>

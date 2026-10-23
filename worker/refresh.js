@@ -62,6 +62,24 @@ export async function refreshNews(env, cfg, { slot = 0, batches = 1, fetchImpl =
   return feedStatus;
 }
 
+/**
+ * Title/description per site language, from YouTube Studio's "Title &
+ * description" translations. Keys like "es-419" or "en-US" collapse to
+ * "es"/"en". The video's own language counts as a translation of itself.
+ */
+export function localizations(v) {
+  const out = {};
+  const put = (code, t, d) => {
+    const lang = String(code || '').slice(0, 2).toLowerCase();
+    if ((lang === 'es' || lang === 'en') && t && !out[lang]) {
+      out[lang] = { title: cleanText(t, 200), description: cleanText(d, 400) };
+    }
+  };
+  for (const [code, loc] of Object.entries(v.localizations || {})) put(code, loc.title, loc.description);
+  put(v.snippet.defaultLanguage, v.snippet.title, v.snippet.description);
+  return Object.keys(out).length ? out : undefined;
+}
+
 async function youtubeApi(fetchImpl, channelId, key, { pages = 1 } = {}) {
   const base = 'https://www.googleapis.com/youtube/v3';
   const uploads = 'UU' + channelId.slice(2);
@@ -76,7 +94,7 @@ async function youtubeApi(fetchImpl, channelId, key, { pages = 1 } = {}) {
   }
   const videos = [];
   for (let i = 0; i < ids.length; i += 50) {
-    const u = `${base}/videos?part=snippet,contentDetails&id=${ids.slice(i, i + 50).join(',')}&key=${key}`;
+    const u = `${base}/videos?part=snippet,contentDetails,localizations&id=${ids.slice(i, i + 50).join(',')}&key=${key}`;
     const data = JSON.parse(await getText(fetchImpl, u));
     for (const v of data.items) {
       if (v.snippet.liveBroadcastContent === 'upcoming') continue;
@@ -87,11 +105,13 @@ async function youtubeApi(fetchImpl, channelId, key, { pages = 1 } = {}) {
         title,
         description: cleanText(v.snippet.description, 400),
         published: new Date(v.snippet.publishedAt).toISOString(),
-        // The API has no "is short" flag. Treat vertical-length clips tagged
-        // #shorts, or anything up to 60 s, as shorts.
+        // The API has no "is short" flag; refreshVideos overrides this with the
+        // RSS feed's exact answer for recent uploads. For older ones, a
+        // #shorts tag or a length of 60 s or less counts as a Short.
         short: (duration != null && duration <= 60) || /#shorts?\b/i.test(v.snippet.title + ' ' + v.snippet.description),
         duration,
         episode: episodeNumber(title),
+        i18n: localizations(v),
       });
     }
   }
@@ -102,14 +122,24 @@ export async function refreshVideos(env, channelId, { fetchImpl = fetch, now = D
   const stored = (await env.BF_KV.get(KEYS.videos, 'json')) || { items: [] };
   let fresh;
   let mode;
+  const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
   if (env.YOUTUBE_API_KEY) {
     // First run (or ?full=1) walks the whole back catalog: up to 10 pages = 500 videos.
     const pages = full || stored.items.length === 0 ? 10 : 1;
-    fresh = await youtubeApi(fetchImpl, channelId, env.YOUTUBE_API_KEY, { pages });
+    const [api, rss] = await Promise.allSettled([
+      youtubeApi(fetchImpl, channelId, env.YOUTUBE_API_KEY, { pages }),
+      getText(fetchImpl, rssUrl).then(parseYouTubeFeed),
+    ]);
+    if (api.status === 'rejected') throw api.reason;
+    fresh = api.value;
+    // RSS links say exactly which recent uploads are Shorts (/shorts/ URLs).
+    if (rss.status === 'fulfilled') {
+      const exact = new Map(rss.value.map((v) => [v.id, v.short]));
+      for (const v of fresh) if (exact.has(v.id)) v.short = exact.get(v.id);
+    }
     mode = 'api';
   } else {
-    const xml = await getText(fetchImpl, `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`);
-    fresh = parseYouTubeFeed(xml);
+    fresh = parseYouTubeFeed(await getText(fetchImpl, rssUrl));
     mode = 'rss';
   }
   const items = mergeVideos(stored.items, fresh);
@@ -119,7 +149,9 @@ export async function refreshVideos(env, channelId, { fetchImpl = fetch, now = D
 
 export async function refreshAll(env, cfg, site, { slot = 0, batches = 1, fetchImpl = fetch, now = Date.now(), full = false, videos = true } = {}) {
   const status = (await env.BF_KV.get(KEYS.status, 'json')) || { feeds: {}, youtube: null };
-  const tasks = [refreshNews(env, cfg, { slot, batches, fetchImpl, now })];
+  // A full YouTube backfill uses up to 21 requests on its own; skip the news
+  // that run so the total stays under the 50-request limit.
+  const tasks = [full ? Promise.resolve({}) : refreshNews(env, cfg, { slot, batches, fetchImpl, now })];
   if (videos) tasks.push(refreshVideos(env, site.youtubeChannelId, { fetchImpl, now, full }));
   const [news, yt] = await Promise.allSettled(tasks);
   if (news.status === 'fulfilled') Object.assign(status.feeds, news.value);

@@ -186,7 +186,9 @@ export function mergeVideos(stored, fresh, maxItems = 500) {
       ...prev,
       ...v,
       duration: v.duration ?? prev.duration ?? null,
-      short: v.short || prev.short || false,
+      // RSS-only refreshes carry no translations; keep the ones the API gave.
+      i18n: v.i18n ?? prev.i18n,
+      short: Boolean(v.short),
     });
   }
   return [...byId.values()].sort((a, b) => b.published.localeCompare(a.published)).slice(0, maxItems);

@@ -217,29 +217,37 @@ the change in about two minutes.
 > Anyone who edits locally as well as through the CMS must `git pull` before
 > starting, because the CMS commits to `main` directly.
 
-## 10. (Optional) Full episode archive with the YouTube API
+## 10. (Recommended) YouTube API: full archive and translated titles
 
-The public RSS only lists the **latest 15 uploads**. The Worker keeps every
-video it has ever seen, so the archive grows from launch on, but older
-episodes won't appear. With a free YouTube Data API key the Worker also
-loads the back catalog (up to 500 videos) and durations.
+The public RSS only lists the **latest 15 uploads**, Shorts included. The
+Worker keeps every video it has ever seen, so the archive grows from launch
+on, but older episodes won't appear. With a free YouTube Data API key the
+Worker also:
+
+- loads the back catalog (up to 500 videos) and durations;
+- reads **title and description translations**. In YouTube Studio →
+  **Languages** → each video → **Title & description**, add the Spanish or
+  English version. The Spanish site shows the Spanish one, the English site
+  the English one, and both fall back to the original.
 
 1. Google Cloud console → new project → **APIs & Services → Library →
    YouTube Data API v3 → Enable**.
 2. **Credentials → Create credentials → API key**. Restrict it to
    *YouTube Data API v3*.
-3. Store it and load the whole catalog once:
+3. Store it and load the whole catalog once (a full load refreshes videos
+   only, not news, to stay under the request limit):
 
 ```bash
 npx wrangler secret put YOUTUBE_API_KEY
-curl -X POST -H "Authorization: Bearer REFRESH_TOKEN" "BETA_URL/api/refresh?full=1"
+curl -X POST -H "Authorization: Bearer $TOKEN" "BETA_URL/api/refresh?full=1"
 ```
 
 Quota use is tiny: about 2 units per refresh against 10,000 per day.
 
-The API has no "is a Short" flag, so with the key the Worker treats videos of
-60 s or less, or titles with `#shorts`, as Shorts and hides them from the
-episode list. With RSS only, Shorts are identified exactly.
+**Shorts** appear in the **Clips** strip (home and episodes pages), not in
+the episode list. The RSS feed marks Shorts exactly, and the Worker reads it
+in both modes. For older videos that are only in the API, a `#shorts` tag or
+a length of 60 s or less counts as a Short.
 
 ## 11. Checking on it
 

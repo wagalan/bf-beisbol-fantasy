@@ -4,6 +4,7 @@ import LeadEpisode from '../components/LeadEpisode.astro';
 import NewsList from '../components/NewsList.astro';
 import FantasyBox from '../components/FantasyBox.astro';
 import EpisodeList from '../components/EpisodeList.astro';
+import Clips from '../components/Clips.astro';
 import { t, href } from '../i18n/ui.js';
 import { articles } from '../lib/articles.js';
 const { lang } = Astro.props;
@@ -15,6 +16,7 @@ const lidom = (await articles(lang, 'lidom'))[0];
     <div class="main"><LeadEpisode lang={lang} /></div>
     <aside class="side"><NewsList lang={lang} heading={s.latestNews} limit={7} more /></aside>
   </div>
+  <div class="row"><div class="main" style="flex-basis:100%;padding-right:0"><Clips lang={lang} /></div></div>
   <div class="row">
     <div class="main"><FantasyBox lang={lang} /></div>
     <aside class="side stack">

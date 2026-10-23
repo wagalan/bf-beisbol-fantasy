@@ -123,3 +123,65 @@ test('CPU budget: parsing a heavy MLBTR feed stays small', () => {
   console.log(`  MLBTR 630 KB feed: ${ms.toFixed(2)} ms per parse`);
   assert.ok(ms < 20);
 });
+
+// ---------- YouTube Data API mode ----------
+import { localizations, refreshVideos } from '../worker/refresh.js';
+
+const apiVideo = (id, title, extra = {}) => ({
+  id,
+  snippet: { title, description: `desc ${id}`, publishedAt: '2026-10-20T12:00:00Z', liveBroadcastContent: 'none', ...extra.snippet },
+  contentDetails: { duration: extra.duration || 'PT1H5M' },
+  localizations: extra.localizations,
+});
+function apiFetch(videos) {
+  return (url) => {
+    if (url.includes('/playlistItems')) return Promise.resolve(Response.json({ items: videos.map((v) => ({ contentDetails: { videoId: v.id } })) }));
+    if (url.includes('/videos?')) return Promise.resolve(Response.json({ items: videos }));
+    return fakeFetch(url); // RSS
+  };
+}
+
+test('localizations: picks es/en from YouTube Studio translations', () => {
+  const v = apiVideo('X', 'World Series preview', {
+    snippet: { defaultLanguage: 'en' },
+    localizations: { 'es-419': { title: 'Previa de la Serie Mundial', description: 'Hablamos de…' }, fr: { title: 'Aperçu' } },
+  });
+  const l = localizations(v);
+  assert.equal(l.es.title, 'Previa de la Serie Mundial');
+  assert.equal(l.en.title, 'World Series preview');
+  assert.equal(l.fr, undefined);
+  assert.equal(localizations(apiVideo('Y', 'No translations')), undefined);
+});
+
+test('API mode: RSS decides which recent uploads are Shorts; durations kept', async () => {
+  const env = { BF_KV: fakeKV(), YOUTUBE_API_KEY: 'k' };
+  // BBBBBBBBBB2 is a Short in the RSS fixture even though it is 2 min long and untagged here
+  const videos = [apiVideo('AAAAAAAAAA1', 'Episodio 42'), apiVideo('BBBBBBBBBB2', 'Caminero rompe la pantalla', { duration: 'PT2M' }), apiVideo('DDDDDDDDDD4', 'Old clip #shorts', { duration: 'PT40S' })];
+  const r = await refreshVideos(env, SITE.youtubeChannelId, { fetchImpl: apiFetch(videos), now: NOW });
+  assert.equal(r.mode, 'api');
+  const items = JSON.parse(env.BF_KV.m.get(KEYS.videos)).items;
+  const by = Object.fromEntries(items.map((v) => [v.id, v]));
+  assert.equal(by.AAAAAAAAAA1.short, false);
+  assert.equal(by.AAAAAAAAAA1.duration, 3900);
+  assert.equal(by.BBBBBBBBBB2.short, true); // from RSS
+  assert.equal(by.DDDDDDDDDD4.short, true); // heuristic, not in RSS
+});
+
+test('translations survive a later RSS-only refresh', async () => {
+  const env = { BF_KV: fakeKV(), YOUTUBE_API_KEY: 'k' };
+  const videos = [apiVideo('AAAAAAAAAA1', 'Episode 42', { snippet: { defaultLanguage: 'en' }, localizations: { es: { title: 'Episodio 42' } } })];
+  await refreshVideos(env, SITE.youtubeChannelId, { fetchImpl: apiFetch(videos), now: NOW });
+  delete env.YOUTUBE_API_KEY;
+  await refreshVideos(env, SITE.youtubeChannelId, { fetchImpl: fakeFetch, now: NOW + 1000 });
+  const v = JSON.parse(env.BF_KV.m.get(KEYS.videos)).items.find((x) => x.id === 'AAAAAAAAAA1');
+  assert.equal(v.i18n.es.title, 'Episodio 42');
+});
+
+test('full backfill skips news to stay under the request limit', async () => {
+  const env = { BF_KV: fakeKV(), YOUTUBE_API_KEY: 'k' };
+  const seen = [];
+  const f = apiFetch([apiVideo('AAAAAAAAAA1', 'Ep')]);
+  await refreshAll(env, FEEDS, SITE, { fetchImpl: (u) => (seen.push(u), f(u)), now: NOW, full: true });
+  assert.ok(!seen.some((u) => u.includes('feeds.test')));
+  assert.equal(env.BF_KV.m.get(KEYS.news), undefined);
+});
