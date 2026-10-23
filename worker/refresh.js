@@ -1,5 +1,5 @@
 // Pulls the RSS feeds and the YouTube channel into KV.
-import { parseNewsFeed, mergeNews, parseYouTubeFeed, mergeVideos, isoDuration, episodeNumber, cleanText } from './parse.js';
+import { parseNewsFeed, isSitemap, mergeNews, parseYouTubeFeed, mergeVideos, isoDuration, episodeNumber, cleanText } from './parse.js';
 
 export const KEYS = { news: 'news:v1', videos: 'videos:v1', status: 'status:v1' };
 
@@ -34,7 +34,7 @@ export async function refreshNews(env, cfg, { slot = 0, batches = 1, fetchImpl =
   const results = await Promise.allSettled(
     batch.map(async (feed) => {
       const xml = await getText(fetchImpl, feed.url);
-      return parseNewsFeed(xml, feed, { now, maxAgeDays: cfg.maxAgeDays });
+      return { items: parseNewsFeed(xml, feed, { now, maxAgeDays: cfg.maxAgeDays }), accumulate: isSitemap(xml) };
     }),
   );
   const fresh = [];
@@ -43,9 +43,11 @@ export async function refreshNews(env, cfg, { slot = 0, batches = 1, fetchImpl =
   results.forEach((r, i) => {
     const f = batch[i];
     if (r.status === 'fulfilled') {
-      fresh.push(...r.value);
-      ok.push(f.id);
-      feedStatus[f.id] = { ok: true, items: r.value.length, at: new Date(now).toISOString() };
+      fresh.push(...r.value.items);
+      // Sitemaps only list a few stories: keep the earlier ones too (until
+      // they age out), instead of replacing the feed's items.
+      if (!r.value.accumulate) ok.push(f.id);
+      feedStatus[f.id] = { ok: true, items: r.value.items.length, at: new Date(now).toISOString() };
     } else {
       feedStatus[f.id] = { ok: false, error: String(r.reason?.message || r.reason).slice(0, 200), at: new Date(now).toISOString() };
     }

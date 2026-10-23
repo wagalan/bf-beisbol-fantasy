@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import ArticleCards from '../components/ArticleCards.astro';
+import NewsList from '../components/NewsList.astro';
 import { t } from '../i18n/ui.js';
 import { articles } from '../lib/articles.js';
 const { lang } = Astro.props;
@@ -10,5 +11,11 @@ const items = await articles(lang, 'lidom');
 <Base lang={lang} path="/lidom/" title={s.winterBall}>
   <span class="kicker" style="display:block;margin-top:32px">LIDOM</span>
   <h1 class="h-page" style="margin-top:4px">{s.winterBall}</h1>
-  <div style="padding-top:24px"><ArticleCards lang={lang} items={items} empty={s.lidomEmpty} /></div>
+  <div class="row">
+    <div class="main"><NewsList lang={lang} team="lidom" heading={s.lidomNews} limit={30} layout="wide" /></div>
+    <aside class="side stack">
+      <h2 class="h-sec">{s.articles}</h2>
+      <ArticleCards lang={lang} items={items} empty={s.lidomEmpty} />
+    </aside>
+  </div>
 </Base>

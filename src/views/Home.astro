@@ -21,12 +21,10 @@ const lidom = (await articles(lang, 'lidom'))[0];
     <div class="main"><FantasyBox lang={lang} /></div>
     <aside class="side stack">
       <h2 class="h-sec">{s.winterBall}</h2>
-      {lidom ? (
-        <>
-          <h3 style="margin:0;font:800 21px/1.2 var(--display)"><a href={href(lang, `/articulos/${lidom.slug}/`)} style="color:var(--ink)">{lidom.data.title}</a></h3>
-          {lidom.data.summary && <p style="margin:0" class="muted">{lidom.data.summary}</p>}
-        </>
-      ) : <p class="muted" style="margin:0">{s.lidomEmpty}</p>}
+      <NewsList lang={lang} team="lidom" limit={4} />
+      {lidom && (
+        <p style="margin:0"><span class="kicker">{s.articles}</span><br /><a href={href(lang, `/articulos/${lidom.slug}/`)} style="font:800 18px/1.25 var(--display);color:var(--ink)">{lidom.data.title}</a></p>
+      )}
       <a class="link-more" href={href(lang, '/lidom/')}>{s.lidomSection}</a>
     </aside>
   </div>

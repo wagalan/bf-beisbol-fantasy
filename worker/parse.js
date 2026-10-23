@@ -11,7 +11,7 @@ const parser = new XMLParser({
   htmlEntities: true,
   parseTagValue: false,
   // Never let a feed grow objects we don't need.
-  isArray: (name) => name === 'item' || name === 'entry',
+  isArray: (name) => name === 'item' || name === 'entry' || name === 'url',
 });
 
 const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', '#39': "'", hellip: '…', rsquo: '’', lsquo: '‘', ldquo: '“', rdquo: '”', mdash: '—', ndash: '–' };
@@ -72,32 +72,56 @@ function dedupeKey(lang, url) {
   }
 }
 
-/** Parse an RSS 2.0 or Atom document into normalized news items. */
+/**
+ * True for a Google News sitemap (<urlset> with <news:news>). Sites like
+ * lidom.com publish one instead of RSS. It only lists the latest few stories,
+ * so these feeds accumulate items between refreshes instead of replacing them.
+ */
+export const isSitemap = (xml) => /<urlset[\s>]/.test(String(xml).slice(0, 3000));
+
+/** Parse an RSS 2.0, Atom or Google News sitemap document into normalized news items. */
 export function parseNewsFeed(xml, feed, { now = Date.now(), maxAgeDays = 10 } = {}) {
   const doc = parser.parse(stripHeavyBlocks(xml));
-  const raw = doc?.rss?.channel?.item ?? doc?.feed?.entry ?? [];
   const minTime = now - maxAgeDays * 864e5;
   const maxTime = now + 864e5; // tolerate small clock/timezone skew
+
+  let raw;
+  if (doc?.urlset) {
+    raw = (doc.urlset.url || []).map((u) => {
+      const n = u['news:news'] || {};
+      return { title: text(n['news:title']), link: text(u.loc), date: text(n['news:publication_date']) || text(u.lastmod), summary: '', author: '' };
+    });
+  } else {
+    raw = (doc?.rss?.channel?.item ?? doc?.feed?.entry ?? []).map((it) => {
+      let link = text(it.link);
+      if (!link && it.link && typeof it.link === 'object') link = it.link['@href'] || '';
+      if (Array.isArray(it.link)) link = (it.link.find((l) => l['@rel'] !== 'self') || it.link[0])['@href'];
+      let date = text(it.pubDate) || text(it.published) || text(it.updated) || text(it['dc:date']);
+      const epoch = Number(text(it['mlb:display-date-epoch']));
+      if (!Number.isFinite(Date.parse(date)) && Number.isFinite(epoch)) date = new Date(epoch * 1000).toISOString();
+      return {
+        title: text(it.title),
+        link,
+        date,
+        summary: text(it.description) || text(it.summary),
+        author: text(it['dc:creator']) || text(it.author?.name),
+      };
+    });
+  }
+
   const out = [];
-  for (const it of raw) {
-    const title = cleanText(text(it.title), 200);
-    let link = text(it.link);
-    if (!link && it.link && typeof it.link === 'object') link = it.link['@href'] || '';
-    if (Array.isArray(it.link)) link = (it.link.find((l) => l['@rel'] !== 'self') || it.link[0])['@href'];
-    const url = safeUrl(link);
+  for (const r of raw) {
+    const title = cleanText(r.title, 200);
+    const url = safeUrl(r.link);
     if (!title || !url) continue;
-
-    let time = Date.parse(text(it.pubDate) || text(it.published) || text(it.updated) || text(it['dc:date']));
-    const epoch = Number(text(it['mlb:display-date-epoch']));
-    if (!Number.isFinite(time) && Number.isFinite(epoch)) time = epoch * 1000;
+    const time = Date.parse(r.date);
     if (!Number.isFinite(time) || time < minTime || time > maxTime) continue;
-
     out.push({
       key: dedupeKey(feed.lang, url),
       title,
       url,
-      summary: cleanText(text(it.description) || text(it.summary), 220),
-      author: cleanText(text(it['dc:creator']) || text(it.author?.name), 80),
+      summary: cleanText(r.summary, 220),
+      author: cleanText(r.author, 80),
       published: new Date(time).toISOString(),
       source: feed.name,
       feed: feed.id,
@@ -123,6 +147,8 @@ export function mergeNews(stored, fresh, refreshedFeedIds, { now = Date.now(), m
       byKey.set(item.key, { ...item, teams: [...item.teams] });
       return;
     }
+    // Same feed again (accumulating sitemaps): take the fresh title/date.
+    if (prev.feed === item.feed) Object.assign(prev, { ...item, teams: prev.teams });
     for (const t of item.teams) if (!prev.teams.includes(t)) prev.teams.push(t);
     // Prefer the team-specific source name over the league feed.
     if (prev.teams[0] === 'mlb' && item.teams[0] !== 'mlb') prev.source = item.source;

@@ -6,11 +6,13 @@
     { "id": "nyy", "label": "NYY" },
     { "id": "lad", "label": "LAD" },
     { "id": "nym", "label": "NYM" },
-    { "id": "bos", "label": "BOS" }
+    { "id": "bos", "label": "BOS" },
+    { "id": "lidom", "label": "LIDOM" }
   ],
   "feeds": [
     { "id": "mlb-en", "name": "MLB.com", "url": "https://www.mlb.com/feeds/news/rss.xml", "team": "mlb", "lang": "en", "enabled": true },
     { "id": "mlb-es", "name": "MLB.com en español", "url": "https://www.mlb.com/es/feeds/news/rss.xml", "team": "mlb", "lang": "es", "enabled": true },
+    { "id": "lidom", "name": "LIDOM", "url": "https://lidom.com/sitemaps/sitemaps-googlenews.xml", "team": "lidom", "lang": "es", "enabled": true },
     { "id": "nyy-mlb", "name": "MLB.com · Yankees", "url": "https://www.mlb.com/yankees/feeds/news/rss.xml", "team": "nyy", "lang": "en", "enabled": true },
     { "id": "nyy-mlbtr", "name": "MLB Trade Rumors", "url": "https://www.mlbtraderumors.com/new-york-yankees/feed", "team": "nyy", "lang": "en", "enabled": true },
     { "id": "lad-mlb", "name": "MLB.com · Dodgers", "url": "https://www.mlb.com/dodgers/feeds/news/rss.xml", "team": "lad", "lang": "en", "enabled": true },

@@ -185,3 +185,34 @@ test('full backfill skips news to stay under the request limit', async () => {
   assert.ok(!seen.some((u) => u.includes('feeds.test')));
   assert.equal(env.BF_KV.m.get(KEYS.news), undefined);
 });
+
+// ---------- LIDOM (Google News sitemap) ----------
+import { isSitemap } from '../worker/parse.js';
+const LIDOM = { id: 'lidom', name: 'LIDOM', url: 'https://feeds.test/lidom-news.xml', team: 'lidom', lang: 'es' };
+
+test('LIDOM: Google News sitemap parses into items', () => {
+  const xml = fx('lidom-news.xml');
+  assert.ok(isSitemap(xml));
+  assert.ok(!isSitemap(fx('mlb-en.xml')));
+  const items = parseNewsFeed(xml, LIDOM, { now: NOW });
+  assert.equal(items.length, 3);
+  assert.equal(items[0].published, '2026-10-23T15:29:01.000Z'); // -03:00 offset honored
+  assert.match(items[1].title, /presión/);
+  assert.deepEqual(items[0].teams, ['lidom']);
+});
+
+test('LIDOM: sitemap items accumulate across refreshes; updated titles win', async () => {
+  const cfg = { maxAgeDays: 10, maxItems: 150, teams: [], feeds: [LIDOM] };
+  const env = { BF_KV: fakeKV() };
+  await refreshAll(env, cfg, SITE, { fetchImpl: fakeFetch, now: NOW, videos: false });
+  // Next hour the sitemap only lists one story, retitled.
+  const later = fx('lidom-news.xml')
+    .replace(/<url><loc>https:\/\/lidom.com\/estrellas[\s\S]*?<\/url>\n/, '')
+    .replace(/<url><loc>https:\/\/lidom.com\/gigantes[\s\S]*?<\/url>\n/, '')
+    .replace('Alfredo Sena destaca', 'Alfredo Sena celebra');
+  await refreshAll(env, cfg, SITE, { fetchImpl: async () => new Response(later), now: NOW + 3600e3, videos: false });
+  const items = JSON.parse(env.BF_KV.m.get(KEYS.news)).items;
+  assert.equal(items.length, 3);
+  assert.ok(items.some((i) => i.title.startsWith('Alfredo Sena celebra')));
+  assert.ok(!items.some((i) => i.title.startsWith('Alfredo Sena destaca')));
+});

@@ -11,6 +11,7 @@ const cfg = {
     { id: 'mlb-en', name: 'MLB.com', url: 'x/mlb-en.xml', team: 'mlb', lang: 'en' },
     { id: 'nyy-mlb', name: 'MLB.com · Yankees', url: 'x/nyy-mlb.xml', team: 'nyy', lang: 'en' },
     { id: 'nyy-mlbtr', name: 'MLB Trade Rumors', url: 'x/mlbtr-nyy.xml', team: 'nyy', lang: 'en' },
+    { id: 'lidom', name: 'LIDOM', url: 'x/lidom-news.xml', team: 'lidom', lang: 'es' },
   ],
 };
 const store = new Map();

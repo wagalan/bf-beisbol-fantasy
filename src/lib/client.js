@@ -57,7 +57,7 @@ function initNews(root) {
   const wide = root.dataset.layout === 'wide';
   const list = root.querySelector('.news');
   const chips = [...root.querySelectorAll('.chip')];
-  let team = 'all';
+  let team = root.dataset.team || 'all';
   let data = null;
 
   const render = () => {
@@ -69,11 +69,13 @@ function initNews(root) {
       return;
     }
     for (const i of items) {
+      const tag = i.teams.filter((x) => x !== 'mlb')[0]?.toUpperCase() || 'MLB';
       const meta = el(
         'span',
         { class: 'n-meta' },
-        el('b', { text: i.teams.filter((x) => x !== 'mlb')[0]?.toUpperCase() || 'MLB' }),
-        ` · ${i.source} · `,
+        el('b', { text: tag }),
+        // Skip the source when it just repeats the tag ("LIDOM · LIDOM").
+        i.source.toUpperCase() === tag ? ' · ' : ` · ${i.source} · `,
         el('time', { datetime: i.published, title: new Date(i.published).toLocaleString(locale(lang)), text: relTime(i.published, lang) }),
         el('span', { class: 'lang', text: i.lang.toUpperCase(), title: i.lang === 'es' ? 'Español' : 'English' }),
       );
