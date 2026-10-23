@@ -1,22 +1,36 @@
 {
-  "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "bf-beisbol-fantasy",
-  "main": "worker/index.js",
-  "compatibility_date": "2026-10-01",
-  // Static site built by Astro. Only /api/* runs the Worker; every other
-  // request is served straight from the assets, which is free and fast.
-  "assets": {
-    "directory": "./dist",
-    "binding": "ASSETS",
-    "not_found_handling": "404-page",
-    "run_worker_first": ["/api/*"]
-  },
-  // Every 10 minutes, one third of the feeds: each feed refreshes every 30 min.
-  "triggers": { "crons": ["*/10 * * * *"] },
-  "kv_namespaces": [
-    // Replace with the id printed by: npx wrangler kv namespace create BF_KV
-    { "binding": "BF_KV", "id": "REPLACE_WITH_KV_NAMESPACE_ID" }
-  ],
-  "vars": { "NEWS_BATCHES": "3" },
-  "observability": { "enabled": true }
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "bf-beisbol-fantasy",
+	"main": "worker/index.js",
+	"compatibility_date": "2026-10-01",
+	// Static site built by Astro. Only /api/* runs the Worker; every other
+	// request is served straight from the assets, which is free and fast.
+	"assets": {
+		"directory": "./dist",
+		"binding": "ASSETS",
+		"not_found_handling": "404-page",
+		"run_worker_first": [
+			"/api/*"
+		]
+	},
+	// Every 10 minutes, one third of the feeds: each feed refreshes every 30 min.
+	"triggers": {
+		"crons": [
+			"*/10 * * * *"
+		]
+	},
+	"kv_namespaces": [
+		// Replace with the id printed by: npx wrangler kv namespace create 7b017f306b7043c4873ddd843839fde6
+		{
+			"binding": "7b017f306b7043c4873ddd843839fde6",
+			"id": "7b017f306b7043c4873ddd843839fde6",
+			"remote": true
+		}
+	],
+	"vars": {
+		"NEWS_BATCHES": "3"
+	},
+	"observability": {
+		"enabled": true
+	}
 }
