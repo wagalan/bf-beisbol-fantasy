@@ -1,0 +1,16 @@
+---
+// LIDOM scoreboard band at the top of every page. Filled by src/lib/client.js
+// from /api/scores; stays hidden when there are no games (off-season) or the
+// data can't be loaded. Switch: Sitio → "Mostrar marcador LIDOM" in the CMS.
+import { t } from '../i18n/ui.js';
+interface Props { lang: 'es' | 'en'; }
+const { lang } = Astro.props;
+const s = t(lang);
+---
+<section class="scoreboard" data-scoreboard data-lang={lang} data-i18n={JSON.stringify(s.sb)} aria-label={s.sb.label} hidden>
+  <div class="sb-wrap">
+    <span class="sb-tag">LIDOM</span>
+    <ol class="sb-row"></ol>
+    <a class="sb-credit" href="https://www.mlb.com/" rel="noopener">{s.sb.credit}</a>
+  </div>
+</section>

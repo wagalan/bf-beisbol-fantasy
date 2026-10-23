@@ -88,6 +88,7 @@ collections:
         fields:
           - { name: beta, label: "Modo beta (oculta el sitio de Google y muestra la etiqueta)", widget: boolean }
           - { name: showFantasy, label: "Mostrar sección Fantasy (menú, portada y página)", widget: boolean, default: false }
+          - { name: showScores, label: "Mostrar marcador LIDOM (franja de resultados arriba)", widget: boolean, default: true, hint: "Datos de MLB (statsapi.mlb.com). Apágalo si MLB pide dejar de usarlos." }
           - { name: name, label: Nombre, widget: string }
           - { name: url, label: "URL pública (https://…)", widget: string }
           - { name: youtubeChannelId, label: ID del canal de YouTube, widget: string, hint: "Empieza con UC. Cambiarlo afecta los episodios." }

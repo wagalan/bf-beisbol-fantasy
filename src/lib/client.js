@@ -240,6 +240,102 @@ function initClips(root) {
     });
 }
 
+// ---------- LIDOM scoreboard ----------
+
+const DR_TZ = 'America/Santo_Domingo';
+const drDay = (ms) => new Date(ms - 4 * 3600e3).toISOString().slice(0, 10); // DR is UTC−4, no DST
+
+function sbStatus(g, s, lang) {
+  if (g.state === 'final') return g.extra ? `${s.final}/${g.extra}` : s.final;
+  if (g.state === 'live') {
+    const half = { top: '▲', bottom: '▼', middle: `${s.mid} `, end: `${s.end} ` }[g.half] ?? '';
+    return `${half}${g.inning ?? ''}${g.outs != null && (g.half === 'top' || g.half === 'bottom') ? ` · ${g.outs} ${s.outs}` : ''}`;
+  }
+  if (g.state === 'suspended') return g.reason && /rain/i.test(g.reason) ? `${s.suspended} (${s.rain})` : s.suspended;
+  if (g.state === 'postponed') return s.postponed;
+  if (g.state === 'cancelled') return s.cancelled;
+  if (g.state === 'delayed') return s.delayed;
+  return new Date(g.start).toLocaleTimeString(lang === 'en' ? 'en-US' : 'es-DO', { hour: 'numeric', minute: '2-digit', timeZone: DR_TZ });
+}
+
+function sbDayLabel(date, s, lang) {
+  const today = drDay(Date.now());
+  const off = Math.round((Date.parse(date) - Date.parse(today)) / 864e5);
+  if (off === 0) return s.today;
+  if (off === -1) return s.yesterday;
+  if (off === 1) return s.tomorrow;
+  return new Date(`${date}T12:00:00Z`).toLocaleDateString(lang === 'en' ? 'en-US' : 'es-DO', { day: 'numeric', month: 'short', timeZone: 'UTC' }).replace('.', '').toUpperCase();
+}
+
+function sbTeamRow(t, g, winner) {
+  const played = g.state !== 'pre' && g.state !== 'postponed' && g.state !== 'cancelled' && t.runs != null;
+  return el(
+    'span',
+    { class: `sb-team${winner === false ? ' sb-lost' : ''}` },
+    el('b', { class: 'sb-abbr', text: t.abbr }),
+    played ? el('span', { class: 'sb-r', text: String(t.runs) }) : el('span', { class: 'sb-rec', text: t.record || '' }),
+    played && t.hits != null ? el('span', { class: 'sb-he', text: `${t.hits} ${t.errors ?? 0}` }) : null,
+  );
+}
+
+function initScoreboard(root) {
+  const lang = root.dataset.lang;
+  const s = JSON.parse(root.dataset.i18n);
+  const row = root.querySelector('.sb-row');
+  let timer = null;
+  let first = true;
+
+  const render = (games) => {
+    row.replaceChildren();
+    let day = null;
+    let todayNode = null;
+    for (const g of games) {
+      if (g.date !== day) {
+        day = g.date;
+        const label = el('li', { class: 'sb-day', text: sbDayLabel(day, s, lang) });
+        if (day === drDay(Date.now())) todayNode = label;
+        row.append(label);
+      }
+      const done = g.state === 'final' && g.away.runs != null && g.home.runs != null && g.away.runs !== g.home.runs;
+      const awayWon = done ? g.away.runs > g.home.runs : null;
+      const title = `${g.away.name} @ ${g.home.name}${g.venue ? ` · ${g.venue}` : ''} — ${s.gameday}`;
+      row.append(
+        el(
+          'li',
+          { class: `sb-game sb-${g.state}` },
+          el(
+            'a',
+            { href: `https://www.mlb.com/${lang === 'en' ? '' : 'es/'}gameday/${g.id}`, rel: 'noopener', target: '_blank', title },
+            el('span', { class: 'sb-status', text: sbStatus(g, s, lang) }),
+            sbTeamRow(g.away, g, done ? awayWon : null),
+            sbTeamRow(g.home, g, done ? !awayWon : null),
+          ),
+        ),
+      );
+    }
+    root.hidden = games.length === 0;
+    // First paint: start the strip at today's games.
+    if (first && todayNode) row.scrollLeft = todayNode.offsetLeft - row.offsetLeft - 8;
+    first = false;
+  };
+
+  const load = () =>
+    fetch('/api/scores', { headers: { accept: 'application/json' } })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(r.status))))
+      .then((d) => {
+        render(d.games || []);
+        // Keep live games fresh: re-check every minute while a game is on
+        // or about to start, and only while the tab is visible.
+        const soon = (d.games || []).some((g) => g.state === 'live' || g.state === 'delayed' || (g.state === 'pre' && Math.abs(Date.parse(g.start) - Date.now()) < 30 * 6e4));
+        clearTimeout(timer);
+        if (soon) timer = setTimeout(() => (document.hidden ? document.addEventListener('visibilitychange', load, { once: true }) : load()), 60e3);
+      })
+      .catch(() => {
+        root.hidden = true;
+      });
+  load();
+}
+
 /** Adds .stuck to the menu once it is pinned to the top, to show the small logo. */
 function initStickyNav() {
   const bar = document.querySelector('[data-navbar]');
@@ -255,6 +351,7 @@ function initStickyNav() {
 
 export function init() {
   initStickyNav();
+  document.querySelectorAll('[data-scoreboard]').forEach(initScoreboard);
   document.querySelectorAll('[data-clips]').forEach(initClips);
   document.querySelectorAll('[data-news]').forEach(initNews);
   document.querySelectorAll('[data-videos]').forEach(initVideos);

@@ -1,6 +1,7 @@
 {
   "beta": true,
   "showFantasy": false,
+  "showScores": true,
   "name": "BF Béisbol Fantasy",
   "url": "https://beisbolfantasy.example",
   "youtubeChannelId": "UCvc-JRJ-e-PJRicZkrd_QCQ",

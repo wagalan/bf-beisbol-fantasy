@@ -3,6 +3,7 @@ import '../styles/global.css';
 import site from '../data/site.json';
 import { t, href } from '../i18n/ui.js';
 import Footer from '../components/Footer.astro';
+import Scoreboard from '../components/Scoreboard.astro';
 
 interface Props { lang: 'es' | 'en'; title?: string; description?: string; path: string; altPath?: string; }
 const { lang, title, description, path, altPath } = Astro.props;
@@ -36,6 +37,7 @@ const navItems = ['episodios', 'noticias', 'fantasy', 'lidom', 'nosotros'].filte
 </head>
 <body>
   <a class="skip" href="#main">{s.skip}</a>
+  {site.showScores && <Scoreboard lang={lang} />}
   <div class="wrap">
     <div class="strip">
       <span><span data-today={lang}>{s.season} {new Date().getFullYear()}</span>{site.beta && <> · <span class="beta">{s.beta}</span></>}</span>

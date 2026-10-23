@@ -3,6 +3,7 @@
 import feedsConfig from '../src/data/feeds.json';
 import site from '../src/data/site.json';
 import { refreshAll, KEYS } from './refresh.js';
+import { getScores } from './scores.js';
 
 const json = (data, init = {}) =>
   new Response(JSON.stringify(data), {
@@ -49,6 +50,10 @@ async function handleApi(req, env, ctx) {
       const limit = Math.min(Number(url.searchParams.get('limit')) || 500, 500);
       const items = data.items.filter((v) => shorts || !v.short).slice(0, limit);
       return json({ updated: data.updated, mode: data.mode, items });
+    }
+    case '/api/scores': {
+      // LIDOM scoreboard, cached at the edge for 60 s (see worker/scores.js).
+      return getScores({ cache: caches.default });
     }
     case '/api/status': {
       const status = (await env.BF_KV.get(KEYS.status, 'json')) || {};

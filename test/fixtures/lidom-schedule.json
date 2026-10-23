@@ -1,0 +1,45 @@
+{
+  "copyright": "Copyright 2026 MLB Advanced Media, L.P.  Use of any content on this page acknowledges agreement to the terms posted here http://gdx.mlb.com/components/copyright.txt",
+  "totalItems": 5, "totalGames": 5, "totalGamesInProgress": 1,
+  "dates": [
+    { "date": "2026-10-22", "games": [
+      { "gamePk": 851515, "gameDate": "2026-10-22T23:00:00Z", "officialDate": "2026-10-22",
+        "status": { "abstractGameState": "Final", "codedGameState": "F", "detailedState": "Final", "statusCode": "F", "abstractGameCode": "F" },
+        "teams": { "away": { "score": 6, "leagueRecord": { "wins": 3, "losses": 3, "pct": ".500" }, "team": { "id": 668, "name": "Toros del Este", "abbreviation": "TOR", "teamName": "Toros" } },
+                   "home": { "score": 7, "leagueRecord": { "wins": 4, "losses": 2, "pct": ".667" }, "team": { "id": 670, "name": "Gigantes del Cibao", "abbreviation": "GIG", "teamName": "Gigantes" } } },
+        "linescore": { "currentInning": 10, "currentInningOrdinal": "10th", "inningState": "Bottom", "isTopInning": false, "scheduledInnings": 9, "outs": 1,
+          "teams": { "home": { "runs": 7, "hits": 12, "errors": 1 }, "away": { "runs": 6, "hits": 11, "errors": 3 } } },
+        "venue": { "id": 3052, "name": "Estadio Julian Javier" } }
+    ]},
+    { "date": "2026-10-23", "games": [
+      { "gamePk": 851559, "gameDate": "2026-10-21T23:15:00Z", "officialDate": "2026-10-21", "resumeDate": "2026-10-23T23:15:00Z",
+        "status": { "abstractGameState": "Live", "codedGameState": "U", "detailedState": "Suspended", "statusCode": "UR", "reason": "Rain" },
+        "teams": { "away": { "score": 0, "leagueRecord": { "wins": 2, "losses": 2 }, "team": { "id": 669, "name": "Estrellas Orientales", "abbreviation": "EST" } },
+                   "home": { "score": 0, "leagueRecord": { "wins": 1, "losses": 3 }, "team": { "id": 667, "name": "Aguilas Cibaenas", "abbreviation": "AGU" } } },
+        "linescore": { "currentInning": 2, "inningState": "Bottom", "isTopInning": false, "scheduledInnings": 9, "outs": 0,
+          "teams": { "home": { "runs": 0, "hits": 0, "errors": 0 }, "away": { "runs": 0, "hits": 1, "errors": 0 } } },
+        "venue": { "name": "Estadio Cibao" } },
+      { "gamePk": 851538, "gameDate": "2026-10-23T23:30:00Z", "officialDate": "2026-10-23",
+        "status": { "abstractGameState": "Live", "codedGameState": "I", "detailedState": "In Progress", "statusCode": "I" },
+        "teams": { "away": { "score": 2, "leagueRecord": { "wins": 4, "losses": 1 }, "team": { "id": 672, "name": "Tigres del Licey", "abbreviation": "LIC" } },
+                   "home": { "score": 1, "leagueRecord": { "wins": 2, "losses": 2 }, "team": { "id": 669, "name": "Estrellas Orientales", "abbreviation": "EST" } } },
+        "linescore": { "currentInning": 5, "currentInningOrdinal": "5th", "inningState": "Top", "isTopInning": true, "scheduledInnings": 9, "outs": 2,
+          "teams": { "home": { "runs": 1, "hits": 4, "errors": 0 }, "away": { "runs": 2, "hits": 6, "errors": 1 } } },
+        "venue": { "name": "Estadio Tetelo Vargas" } },
+      { "gamePk": 851488, "gameDate": "2026-10-23T23:15:00Z", "officialDate": "2026-10-23",
+        "status": { "abstractGameState": "Preview", "codedGameState": "S", "detailedState": "Scheduled", "statusCode": "S" },
+        "teams": { "away": { "leagueRecord": { "wins": 1, "losses": 3 }, "team": { "id": 667, "name": "Aguilas Cibaenas", "abbreviation": "AGU" } },
+                   "home": { "leagueRecord": { "wins": 1, "losses": 4 }, "team": { "id": 671, "name": "Leones del Escogido", "abbreviation": "ESC" } } },
+        "linescore": { "scheduledInnings": 9, "innings": [], "teams": { "home": {}, "away": {} } },
+        "venue": { "name": "Estadio Quisqueya Juan Marichal" } }
+    ]},
+    { "date": "2026-10-24", "games": [
+      { "gamePk": 851487, "gameDate": "2026-10-24T20:00:00Z", "officialDate": "2026-10-24",
+        "status": { "abstractGameState": "Preview", "codedGameState": "D", "detailedState": "Postponed", "statusCode": "DR", "reason": "Rain" },
+        "teams": { "away": { "leagueRecord": { "wins": 3, "losses": 3 }, "team": { "id": 668, "name": "Toros del Este", "abbreviation": "TOR" } },
+                   "home": { "leagueRecord": { "wins": 1, "losses": 4 }, "team": { "id": 671, "name": "Leones del Escogido", "abbreviation": "ESC" } } },
+        "linescore": { "scheduledInnings": 9, "teams": { "home": {}, "away": {} } },
+        "venue": { "name": "Estadio Quisqueya Juan Marichal" } }
+    ]}
+  ]
+}

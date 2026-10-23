@@ -27,6 +27,27 @@ a:hover { color: var(--blue-dark); }
 .mono { font-family: var(--mono); }
 .muted { color: var(--muted); }
 
+/* LIDOM scoreboard band (top of every page) */
+.scoreboard { background: var(--ink); color: var(--paper); font: 500 12px/1.35 var(--mono); }
+.sb-wrap { max-width: var(--max); margin: 0 auto; padding: 0 24px; display: flex; align-items: stretch; gap: 12px; }
+.sb-tag { align-self: center; font-weight: 700; letter-spacing: .08em; background: var(--blue); color: #fff; padding: 3px 7px; flex: none; }
+.sb-row { list-style: none; margin: 0; padding: 0; display: flex; align-items: stretch; overflow-x: auto; scrollbar-width: thin; flex: 1; min-width: 0; }
+.sb-day { flex: none; display: flex; align-items: center; padding: 0 10px; font-weight: 700; color: var(--orange); letter-spacing: .06em; border-left: 1px solid #3a3a3a; }
+.sb-game { flex: none; border-left: 1px solid #3a3a3a; }
+.sb-game a { display: flex; flex-direction: column; gap: 1px; padding: 7px 12px; min-width: 128px; color: var(--paper); text-decoration: none; }
+.sb-game a:hover { background: #262626; }
+.sb-status { font-size: 11px; color: #b5b0a5; letter-spacing: .04em; white-space: nowrap; }
+.sb-live .sb-status { color: var(--orange); font-weight: 700; }
+.sb-suspended .sb-status, .sb-postponed .sb-status, .sb-cancelled .sb-status { color: #e7a6a6; }
+.sb-team { display: grid; grid-template-columns: 3.4em 2.2em auto; align-items: baseline; }
+.sb-r { font-weight: 700; text-align: right; }
+.sb-he, .sb-rec { color: #9a958b; padding-left: 10px; white-space: nowrap; }
+.sb-lost { color: #9a958b; }
+.sb-lost .sb-abbr, .sb-lost .sb-r { font-weight: 500; }
+.sb-credit { align-self: center; flex: none; color: #9a958b; font-size: 11px; text-decoration: none; }
+.sb-credit:hover { color: var(--paper); }
+@media (max-width: 640px) { .sb-wrap { padding: 0 0 0 12px; gap: 8px; } .sb-credit { display: none; } }
+
 /* Top strip + masthead */
 .strip { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--ink); font: 500 13px var(--mono); }
 .strip .langs { display: flex; gap: 10px; }
